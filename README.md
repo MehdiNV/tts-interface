@@ -1,2 +1,2 @@
 # tts-interface
-Interface for elders and the visually-impaired; to have a easily readable piece of software that can read or write on their behalf
+Interface for the elderly and the visually-impaired; designed to have a easily readable piece of software that can read or write on their behalf
