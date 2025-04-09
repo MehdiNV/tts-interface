@@ -1,0 +1,69 @@
+body {
+  color: black;
+  background-color: black;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 80%;
+  width: 100%;
+}
+
+#ttsButton, #sttButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 85%;
+  height: 40%;
+  font-size: 2.5em;
+  font-weight: bold;
+  border: 4px solid white;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+/* Button colors */
+#ttsButton {
+  background-color: yellow;
+  color: black;
+}
+
+#sttButton {
+  background-color: green;
+  color: red;
+}
+
+/* Hover Effects */
+#ttsButton:hover {
+  background-color: #ffff99;
+  box-shadow: 0 0 15px white;
+}
+
+#sttButton:hover {
+  background-color: #66ff66;
+  box-shadow: 0 0 15px white;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  #ttsButton, #sttButton {
+    height: 35%;
+    font-size: 2em;
+    width: 90%;
+  }
+
+  .flex-container {
+    height: 90%;
+  }
+}
