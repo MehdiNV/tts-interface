@@ -1,0 +1,129 @@
+/* General Page Styling */
+body {
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Back Button */
+#backButton {
+    align-self: flex-start;
+    width: 30%;
+    max-width: 200px;
+    min-width: 120px;
+    text-align: center;
+    padding: 10px;
+    font-size: 1.2em;
+    color: black;
+    background-color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    border: 3px solid red;
+    transition: background 0.3s ease, transform 0.2s ease;
+    margin-bottom: 10px;
+}
+
+/* Hover Effect for Back Button */
+#backButton:hover {
+    background-color: #ddd;
+    transform: scale(1.05);
+}
+
+/* Text Input Box */
+#textInput {
+    width: 70%;
+    height: 70%;
+    background-color: white;
+    color: black;
+    font-size: 1.5em;
+    border-radius: 10px;
+    padding: 15px;
+    border: 4px solid red;
+    resize: none;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+/* Submit Button */
+#submitButton {
+    width: 30%;
+    max-width: 200px;
+    padding: 15px;
+    font-size: 1.5em;
+    font-weight: bold;
+    background-color: yellow;
+    color: black;
+    border: 4px solid red;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    margin-top: 15px;
+}
+
+/* Hover Effect for Submit Button */
+#submitButton:hover {
+    background-color: #ffea00;
+    transform: scale(1.05);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    #textInput {
+        width: 90%;
+        height: 60%;
+        font-size: 1.2em;
+    }
+
+    #submitButton {
+        width: 60%;
+        font-size: 1.2em;
+    }
+
+    #backButton {
+        width: 60%;
+        font-size: 1em;
+    }
+}
+
+#playButton {
+    width: 30%;
+    max-width: 200px;
+    padding: 15px;
+    font-size: 1.5em;
+    font-weight: bold;
+    background-color: yellow;
+    color: black;
+    border: 4px solid red;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#playButton:hover {
+    background-color: #ffea00;
+    transform: scale(1.05);
+}
+
+#languageSelect {
+    width: 30%;
+    max-width: 200px;
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 8px;
+    border: 2px solid white;
+    background-color: black;
+    color: white;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
