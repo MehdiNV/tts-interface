@@ -1,37 +1,71 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
-    <meta
-      http-equiv="X-Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
-    <link rel="stylesheet" href="pages/css/index.css">
-    <title>Home</title>
-  </head>
-  <body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Accessibility tool for visually impaired users to convert text to speech or speech to text" />
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'"
+  />
+  <meta
+    http-equiv="X-Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'"
+  />
+  <link rel="stylesheet" href="pages/css/index.css">
+  <title>Accessibility Reading Tools - Home</title>
+</head>
+<body>
+  <div class="skip-link">
+    <a href="#main-content">Skip to main content</a>
+  </div>
+
+  <header>
+    <h1 class="sr-only">Accessibility Reading Tools</h1>
+  </header>
+
+  <main id="main-content">
     <div class="flex-container">
-      <a href="pages/ttsPage.html" id="ttsButton">Text to speech</a>
-      <a href="pages/sttPage.html" id="sttButton">Speech to text</a>
+      <a href="pages/ttsPage.html" id="ttsButton" class="accessibility-button" role="button" aria-label="Text to speech tool">
+        <span class="button-icon">🔊</span>
+        <span class="button-text">Text to speech</span>
+      </a>
+      <a href="pages/sttPage.html" id="sttButton" class="accessibility-button" role="button" aria-label="Speech to text tool">
+        <span class="button-icon">🎤</span>
+        <span class="button-text">Speech to text</span>
+      </a>
     </div>
+  </main>
 
+  <footer>
+    <p class="sr-only">Accessibility tools for visually impaired users</p>
+  </footer>
 
+  <script>
+    // Announce page on load for screen readers
+    window.addEventListener('DOMContentLoaded', () => {
+      const announcement = document.createElement('div');
+      announcement.setAttribute('aria-live', 'polite');
+      announcement.setAttribute('aria-atomic', 'true');
+      announcement.classList.add('sr-only');
+      announcement.textContent = 'Welcome to Accessibility Reading Tools. Please select Text to Speech or Speech to Text option.';
+      document.body.appendChild(announcement);
 
-    <script>
-      const textArea = document.getElementById('textInput');
+      // Remove announcement after it's been read
+      setTimeout(() => {
+        announcement.textContent = '';
+      }, 3000);
+    });
 
-      document.addEventListener('keydown', (event) => {
-          if (document.activeElement === textArea) return; // Let normal typing happen inside textbox
-          const isPrintable = event.key.length === 1;
-          if (isPrintable) {
-              textArea.value += event.key;
-          }
-      });
+    // Add keyboard navigation
+    document.addEventListener('keydown', (event) => {
+      if (event.key === '1') {
+        document.getElementById('ttsButton').click();
+      } else if (event.key === '2') {
+        document.getElementById('sttButton').click();
+      }
+    });
   </script>
-  </body>
+</body>
 </html>
