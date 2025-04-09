@@ -138,5 +138,3 @@ document.addEventListener('keydown', (event) => {
     textArea.value += event.key;
   }
 });
-
-Design a landing page for this project I'm building: a website that allows those with visually impaired select TTS (text to speech) or STT (Speech to text) in order to be able to read. You'll need to prioritise colours that are easy to spot as a result. The users have some sight, but they struggle massively. You'll want stuff that's easily detectable to someone whose eyes are fuzzy.
