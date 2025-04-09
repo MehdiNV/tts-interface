@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'"
+    />
+    <meta
+      http-equiv="X-Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'"
+    />
+    <link rel="stylesheet" href="pages/css/index.css">
+    <title>Home</title>
+  </head>
+  <body>
+    <div class="flex-container">
+      <a href="pages/ttsPage.html" id="ttsButton">Text to speech</a>
+      <a href="pages/sttPage.html" id="sttButton">Speech to text</a>
+    </div>
+
+
+
+    <script>
+      const textArea = document.getElementById('textInput');
+
+      document.addEventListener('keydown', (event) => {
+          if (document.activeElement === textArea) return; // Let normal typing happen inside textbox
+          const isPrintable = event.key.length === 1;
+          if (isPrintable) {
+              textArea.value += event.key;
+          }
+      });
+  </script>
+  </body>
+</html>
