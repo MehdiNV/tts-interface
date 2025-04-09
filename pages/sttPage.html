@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Speech-to-Text tool for visually impaired users" />
+  <title>Speech-to-Text Tool</title>
+  <link rel="stylesheet" href="css/sttPage.css" />
+</head>
+<body>
+  <!-- Skip link for keyboard users to jump directly to main content -->
+  <div class="skip-link">
+    <a href="#main-content">Skip to main content</a>
+  </div>
+
+  <header>
+    <h1 class="sr-only">Speech-to-Text Tool</h1>
+  </header>
+
+  <!-- Main container splits the page into two panels: left for buttons, right for textbox -->
+  <div class="container">
+    <div class="left-panel">
+      <!-- Back button -->
+      <a href="../index.html" id="backButton" class="button-back" aria-label="Back to home page">
+        <span aria-hidden="true">⬅</span> Back
+      </a>
+
+      <!-- Circular microphone button -->
+      <button id="micButton" class="button-mic" aria-label="Start or stop recording">
+        <span aria-hidden="true">🎤</span>
+      </button>
+
+      <!-- Square clear button -->
+      <button id="clearButton" class="button-clear" aria-label="Clear transcription">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+
+    <!-- Right panel with a textarea for the transcription -->
+    <main id="main-content" class="right-panel">
+      <label for="textBox" class="sr-only">Transcribed text</label>
+      <textarea
+        id="textBox"
+        aria-label="Speech transcription area"
+        placeholder="Your transcribed text will appear here..."
+      ></textarea>
+    </main>
+  </div>
+
+  <footer>
+    <p class="sr-only">Footer content for Speech-to-Text Tool</p>
+  </footer>
+</body>
+</html>

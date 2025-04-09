@@ -1,6 +1,6 @@
 /* Base styles */
 body {
-  color: black;
+  color: white;
   background-color: black;
   margin: 0;
   padding: 0;
@@ -74,6 +74,13 @@ body {
   position: relative;
   padding: 30px;
   box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+/* Disabled state for buttons */
+.accessibility-button[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 /* Button icons */
