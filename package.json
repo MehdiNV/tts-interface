@@ -1,0 +1,26 @@
+{
+  "name": "tts-interface",
+  "version": "1.0.0",
+  "description": "Interface for elders and the visually-impaired; to have a easily readable piece of software that can read or write on their behalf",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MehdiNV/tts-interface.git"
+  },
+  "author": "Mehdi Naderi Varandi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MehdiNV/tts-interface/issues"
+  },
+  "homepage": "https://github.com/MehdiNV/tts-interface#readme",
+  "devDependencies": {
+    "electron": "^35.1.4"
+  },
+  "dependencies": {
+    "electron-reload": "^2.0.0-alpha.1"
+  }
+}
