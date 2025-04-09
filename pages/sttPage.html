@@ -17,23 +17,25 @@
     <h1 class="sr-only">Speech-to-Text Tool</h1>
   </header>
 
-  <!-- Main container splits the page into two panels: left for buttons, right for textbox -->
+  <!-- Container splits page into two panels: left for buttons; right for the transcription textbox -->
   <div class="container">
     <div class="left-panel">
-      <!-- Back button -->
+      <!-- Fixed-size Back button -->
       <a href="../index.html" id="backButton" class="button-back" aria-label="Back to home page">
         <span aria-hidden="true">⬅</span> Back
       </a>
 
-      <!-- Circular microphone button -->
-      <button id="micButton" class="button-mic" aria-label="Start or stop recording">
-        <span aria-hidden="true">🎤</span>
-      </button>
-
-      <!-- Square clear button -->
-      <button id="clearButton" class="button-clear" aria-label="Clear transcription">
-        <span aria-hidden="true">✕</span>
-      </button>
+      <!-- Container for bottom buttons that will fill the remaining vertical space -->
+      <div class="bottom-buttons">
+        <!-- Enlarged circular microphone button -->
+        <button id="micButton" class="button-mic" aria-label="Start or stop recording">
+          <span aria-hidden="true">🎤</span>
+        </button>
+        <!-- Enlarged square clear button -->
+        <button id="clearButton" class="button-clear" aria-label="Clear transcription">
+          <span aria-hidden="true">✕</span>
+        </button>
+      </div>
     </div>
 
     <!-- Right panel with a textarea for the transcription -->
@@ -50,5 +52,8 @@
   <footer>
     <p class="sr-only">Footer content for Speech-to-Text Tool</p>
   </footer>
+
+  <!-- External JavaScript file -->
+  <script src="javascript/sttPageScript.js"></script>
 </body>
 </html>

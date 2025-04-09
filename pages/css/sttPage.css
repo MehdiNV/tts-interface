@@ -124,7 +124,7 @@ body {
 /* Enlarged microphone button: now 70% of the container width and 240px min-height */
 .button-mic {
   flex: 1;
-  min-height: 240px;
+  min-height: 200px;
   width: 70%;
   background-color: #f54242;
   color: white;
@@ -145,7 +145,7 @@ body {
 /* Enlarged clear button: now 70% of the container width and 240px min-height */
 .button-clear {
   flex: 1;
-  min-height: 240px;
+  min-height: 200px;
   width: 70%;
   background-color: #333;
   color: white;
