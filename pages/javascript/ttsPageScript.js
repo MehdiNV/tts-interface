@@ -5,20 +5,28 @@ const backButton = document.getElementById('backButton');
 
 let voices = [];
 
-// Load system voices
-function loadVoices() {
-  voices = speechSynthesis.getVoices();
+// Load voices when available
+function waitForVoices() {
+  return new Promise((resolve) => {
+    const check = () => {
+      voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        resolve();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
 }
-speechSynthesis.onvoiceschanged = loadVoices;
-loadVoices();
 
-// Language detection: returns 'fa-IR' for Persian, 'en-US' for everything else
+// Detect whether the text is Persian or English
 function detectLanguage(text) {
   const isPersian = /[\u0600-\u06FF]/.test(text);
   return isPersian ? 'fa-IR' : 'en-US';
 }
 
-// Speak a message using a specific language (optional voice override)
+// Speak a description (used for hover events)
 function speakDescription(message, lang = 'en-US') {
   speechSynthesis.cancel();
 
@@ -33,7 +41,7 @@ function speakDescription(message, lang = 'en-US') {
   speechSynthesis.speak(utterance);
 }
 
-// Speak fallback message in Persian (if available) and then English
+// Speak fallback message in Persian first, then English
 function speakFallbackMessages() {
   const faMessage = "متاسفم، زبان انتخاب شده در این دستگاه پشتیبانی نمی‌شود.";
   const enMessage = "Sorry, the selected language is not supported on this device.";
@@ -55,17 +63,15 @@ function speakFallbackMessages() {
         speechSynthesis.speak(utterEn);
       }
     };
-  } else {
-    if (enVoice) {
-      const utterEn = new SpeechSynthesisUtterance(enMessage);
-      utterEn.voice = enVoice;
-      utterEn.lang = 'en-US';
-      speechSynthesis.speak(utterEn);
-    }
+  } else if (enVoice) {
+    const utterEn = new SpeechSynthesisUtterance(enMessage);
+    utterEn.voice = enVoice;
+    utterEn.lang = 'en-US';
+    speechSynthesis.speak(utterEn);
   }
 }
 
-// Speak user-entered text or fallback if language not supported
+// Speak user text or fallback
 function speakWithFallback(text, lang) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
@@ -79,45 +85,58 @@ function speakWithFallback(text, lang) {
   }
 }
 
-// Play button click — speak entered text
-playButton.addEventListener('click', () => {
-  const text = textArea.value.trim();
-  if (text === "") return;
+// Unlock voices silently on first user click (Chrome/macOS workaround)
+document.addEventListener('click', () => {
+  const silentUtter = new SpeechSynthesisUtterance(" ");
+  silentUtter.volume = 0;
+  speechSynthesis.speak(silentUtter);
+  voices = speechSynthesis.getVoices(); // reload voices just in case
+}, { once: true });
 
-  const detectedLang = detectLanguage(text);
-  speakWithFallback(text, detectedLang);
+// Once voices are ready, wire up all speaking behavior
+waitForVoices().then(() => {
+  // Hover: Back button
+  backButton.addEventListener('mouseenter', () => {
+    speakDescription("This is a button to return to the home page.");
+  });
+
+  // Hover: Submit button
+  submitButton.addEventListener('mouseenter', () => {
+    const text = textArea.value;
+    const isPersian = /[\u0600-\u06FF]/.test(text);
+    const message = isPersian
+      ? "این یک دکمه برای ارسال است."
+      : "This is a button for submission.";
+    const lang = isPersian ? "fa-IR" : "en-US";
+    speakDescription(message, lang);
+  });
+
+  // Hover: Play button
+  playButton.addEventListener('mouseenter', () => {
+    const text = textArea.value;
+    const isPersian = /[\u0600-\u06FF]/.test(text);
+    const message = isPersian
+      ? "این یک دکمه برای پخش متن است."
+      : "This is a button to play the text.";
+    const lang = isPersian ? "fa-IR" : "en-US";
+    speakDescription(message, lang);
+  });
+
+  // Click: Play button
+  playButton.addEventListener('click', () => {
+    const text = textArea.value.trim();
+    if (text === "") return;
+
+    const detectedLang = detectLanguage(text);
+    speakWithFallback(text, detectedLang);
+  });
 });
 
-// Submit button hover — describe in EN/FA
-submitButton.addEventListener('mouseenter', () => {
-  const text = textArea.value;
-  const isPersian = /[\u0600-\u06FF]/.test(text);
-  const message = isPersian
-    ? "این یک دکمه برای ارسال است."
-    : "This is a button for submission.";
-  const lang = isPersian ? "fa-IR" : "en-US";
-  speakDescription(message, lang);
-});
-
-// Back button hover — describe
-backButton.addEventListener('mouseenter', () => {
-  speakDescription("This is a button to return to the home page.");
-});
-
-// Play button hover — describe in EN/FA
-playButton.addEventListener('mouseenter', () => {
-  const text = textArea.value;
-  const isPersian = /[\u0600-\u06FF]/.test(text);
-  const message = isPersian
-    ? "این یک دکمه برای پخش متن است."
-    : "This is a button to play the text.";
-  const lang = isPersian ? "fa-IR" : "en-US";
-  speakDescription(message, lang);
-});
-
-// Optional: allow keypress repetition outside textbox
+// Optional: Allow key hold to repeat letters into textArea
 document.addEventListener('keydown', (event) => {
   if (document.activeElement !== textArea && event.key.length === 1) {
     textArea.value += event.key;
   }
 });
+
+Design a landing page for this project I'm building: a website that allows those with visually impaired select TTS (text to speech) or STT (Speech to text) in order to be able to read. You'll need to prioritise colours that are easy to spot as a result. The users have some sight, but they struggle massively. You'll want stuff that's easily detectable to someone whose eyes are fuzzy.
