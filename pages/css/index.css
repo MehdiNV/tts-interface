@@ -123,6 +123,31 @@ body {
   outline-offset: 6px;
 }
 
+/* Language Selector Styles */
+.language-selector {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.1); /* semi-transparent background */
+  padding: 8px 12px;
+  border-radius: 8px;
+  z-index: 110; /* above most elements */
+}
+
+.language-selector .language-label {
+  color: white;
+  font-size: 1em;
+  margin-right: 5px;
+}
+
+.language-selector select {
+  font-size: 1em;
+  padding: 4px;
+  border: 1px solid white;
+  background: black;
+  color: white;
+}
+
 /* Footer - reduced space */
 footer {
   margin-top: 0;
@@ -186,4 +211,66 @@ footer {
   #ttsButton, #sttButton {
     forced-color-adjust: none;
   }
+}
+
+/* ----- Custom Language Selector Styles ----- */
+
+.language-selector {
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
+  width: 220px; /* Set to occupy the empty space on the left */
+  text-align: left;
+  z-index: 110;
+}
+
+.language-selector #languageButton {
+  width: 100%;
+  height: 60px; /* About 30% of the main buttons' size */
+  font-size: 1.8em;
+  padding: 10px 15px;
+  border: 2px solid white;
+  border-radius: 8px;
+  background-color: black;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.language-selector #languageButton:hover,
+.language-selector #languageButton:focus {
+  background-color: #333;
+}
+
+/* The dropdown list is hidden by default via max-height */
+.language-selector .language-list {
+  list-style: none;
+  margin: 5px 0 0 0;
+  padding: 0;
+  border: 2px solid white;
+  border-radius: 8px;
+  background-color: black;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+/* When the dropdown is open (via the "show" class), expand the list */
+.language-selector .language-list.show {
+  max-height: 300px; /* Adjust as needed to show all items */
+}
+
+/* List item styles */
+.language-selector .language-list li {
+  padding: 10px 15px;
+  font-size: 1.8em;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.language-selector .language-list li:hover,
+.language-selector .language-list li:focus {
+  background-color: #555;
 }

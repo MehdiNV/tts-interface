@@ -4,20 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Accessibility tool for visually impaired users to convert text to speech or speech to text" />
-  <meta
-    http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self'"
-  />
-  <meta
-    http-equiv="X-Content-Security-Policy"
-    content="default-src 'self'; script-src 'self'"
-  />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
   <link rel="stylesheet" href="pages/css/index.css">
   <title>Accessibility Reading Tools - Home</title>
 </head>
 <body>
   <div class="skip-link">
     <a href="#main-content">Skip to main content</a>
+  </div>
+
+  <!-- Custom Language Selector Component -->
+  <div class="language-selector">
+    <button id="languageButton" aria-haspopup="true" aria-controls="languageList" aria-label="Select language">English</button>
+    <ul id="languageList" class="language-list">
+      <li data-value="en">English</li>
+      <li data-value="de">Deutsch</li>
+      <li data-value="fa">فارسی</li>
+    </ul>
   </div>
 
   <header>
