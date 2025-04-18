@@ -65,8 +65,8 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;  /* center the buttons horizontally */
-  gap: 30px;  /* increased gap */
+  align-items: center;
+  gap: 30px;
   width: 100%;
 }
 
@@ -121,13 +121,13 @@ body {
   transform: scale(1.03);
 }
 
-/* Enlarged microphone button: now 70% of the container width and 240px min-height */
+/* Enlarged microphone button: now yellow background and black icon */
 .button-mic {
   flex: 1;
   min-height: 200px;
   width: 70%;
-  background-color: #f54242;
-  color: white;
+  background-color: yellow;
+  color: black;
   font-size: 4em;
   border: 4px solid white;
   border-radius: 50%;
@@ -137,17 +137,17 @@ body {
 
 .button-mic:hover,
 .button-mic:focus {
-  background-color: #ff6666;
+  background-color: #ffff99;
   outline: 3px dashed white;
   transform: scale(1.03);
 }
 
-/* Enlarged clear button: now 70% of the container width and 240px min-height */
+/* Enlarged clear button: now red background */
 .button-clear {
   flex: 1;
   min-height: 200px;
   width: 70%;
-  background-color: #333;
+  background-color: red;
   color: white;
   font-size: 4em;
   border: 4px solid white;
@@ -158,7 +158,7 @@ body {
 
 .button-clear:hover,
 .button-clear:focus {
-  background-color: #666;
+  background-color: #ff6666;
   outline: 3px dashed white;
   transform: scale(1.03);
 }

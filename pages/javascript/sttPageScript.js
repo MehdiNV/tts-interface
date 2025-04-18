@@ -125,7 +125,7 @@ micButton.addEventListener('click', async function () {
       mediaRecorder.start();
       isRecording = true;
       micButton.setAttribute('aria-label', 'Stop recording');
-      micButton.style.backgroundColor = '#ff0000';  // Red indicates active recording.
+      micButton.style.backgroundColor = 'red';  // Red indicates active recording.
 
     } catch (err) {
       console.error("Error accessing microphone:", err);
@@ -136,7 +136,7 @@ micButton.addEventListener('click', async function () {
       mediaRecorder.stop();
       isRecording = false;
       micButton.setAttribute('aria-label', 'Start or stop recording');
-      micButton.style.backgroundColor = '#f54242';  // Restore original color.
+      micButton.style.backgroundColor = 'yellow';  // Restore original yellow state.
     }
   }
 });
@@ -254,7 +254,6 @@ async function sendChunk(chunkBuffer) {
   const formData = new FormData();
   formData.append('file', wavBlob, 'chunk.wav');
   formData.append('model', 'whisper-1');
-  // You can append additional parameters if needed, e.g., language.
 
   const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
     method: 'POST',
@@ -274,7 +273,6 @@ async function sendChunk(chunkBuffer) {
 
 // Sends a single WAV Blob to OpenAI API (for audio within size limit).
 function sendToOpenAI(wavBlob) {
-  // Retrieve API key from the environment.
   const API_KEY = process.env.OPENAI_API_KEY || 'YOUR_API_KEY_FALLBACK';
 
   const formData = new FormData();
