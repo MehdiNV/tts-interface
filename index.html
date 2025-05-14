@@ -6,23 +6,13 @@
   <meta name="description" content="Accessibility tool for visually impaired users to convert text to speech or speech to text" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
   <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
-  <link rel="stylesheet" href="pages/css/index.css">
-  <link href="favicon.ico" rel="icon" type="image/x-icon">
-  <title>Accessibility Reading Tools - Home</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="index.css" />
+  <title>Accessibility Reading Tools</title>
 </head>
 <body>
   <div class="skip-link">
     <a href="#main-content">Skip to main content</a>
-  </div>
-
-  <!-- Custom Language Selector Component -->
-  <div class="language-selector">
-    <button id="languageButton" aria-haspopup="true" aria-controls="languageList" aria-label="Select language">English</button>
-    <ul id="languageList" class="language-list">
-      <li data-value="en">English</li>
-      <li data-value="de">Deutsch</li>
-      <li data-value="fa">فارسی</li>
-    </ul>
   </div>
 
   <header>
@@ -30,19 +20,21 @@
   </header>
 
   <main id="main-content">
-    <!-- Visually hidden keyboard shortcut instructions -->
-    <p id="keyboardInstructions" class="sr-only" aria-live="polite">
-      Keyboard Shortcuts: Press 1 to navigate to Text to Speech. Speech to Text feature is currently disabled.
-    </p>
-    <div class="flex-container">
-      <a href="pages/ttsPage.html" id="ttsButton" class="accessibility-button" role="button" aria-label="Text to speech tool">
-        <span class="button-icon">🔊</span>
-        <span class="button-text">Text to speech</span>
-      </a>
-      <a href="pages/sttPage.html" id="sttButton" class="accessibility-button" role="button" aria-label="Speech to text tool">
-        <span class="button-icon">🎤</span>
-        <span class="button-text">Speech to text</span>
-      </a>
+    <div class="text-input-container">
+      <label for="textInput" class="sr-only">Enter or transcribe text</label>
+      <textarea
+        id="textInput"
+        placeholder="Type your text or click the microphone to speak..."
+        aria-label="Text input area"
+        aria-describedby="textHelp"
+      ></textarea>
+      <div id="textHelp" class="sr-only">Use the buttons below to read or record text.</div>
+    </div>
+
+    <div class="controls">
+      <button id="micButton" aria-label="Start or stop recording"><span aria-hidden="true">🎤</span></button>
+      <button id="playButton" aria-label="Play text"><span aria-hidden="true">▶</span> Play Text</button>
+      <button id="clearButton" aria-label="Clear text"><span aria-hidden="true">✕</span> Clear</button>
     </div>
   </main>
 
@@ -50,7 +42,6 @@
     <p class="sr-only">Accessibility tools for visually impaired users</p>
   </footer>
 
-  <!-- External JavaScript file -->
-  <script src="pages/javascript/index.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>
