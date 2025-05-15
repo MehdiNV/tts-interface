@@ -6,8 +6,8 @@ const { Buffer } = require('buffer');
 // Configure AWS Polly
 const polly = new AWS.Polly({
   region: 'us-east-1',
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  accessKeyId: process.env.POLLY_ACCESS_KEY_ID,
+  secretAccessKey: process.env.POLLY_SECRET_ACCESS_KEY
 });
 
 exports.handler = async function(event) {
