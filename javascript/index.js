@@ -200,10 +200,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   console.log('Voices loaded');
 
-  micButton.addEventListener('mouseenter', () => speakHoverText('Spracheingabe starten oder stoppen'));
-  playButton.addEventListener('mouseenter', () => speakHoverText('Text vorlesen'));
-  clearButton.addEventListener('mouseenter', () => speakHoverText('Text löschen'));
-  textArea.addEventListener('focus', () => speakHoverText('Geben Sie hier Ihren Text ein oder diktieren Sie ihn'));
+  // Disables voiceover narration
+  // micButton.addEventListener('mouseenter', () => speakHoverText('Spracheingabe starten oder stoppen'));
+  // playButton.addEventListener('mouseenter', () => speakHoverText('Text vorlesen'));
+  // clearButton.addEventListener('mouseenter', () => speakHoverText('Text löschen'));
+  // textArea.addEventListener('focus', () => speakHoverText('Geben Sie hier Ihren Text ein oder diktieren Sie ihn'));
 
   // Unlock speech synthesis voices on first user interaction (Chrome/macOS workaround)
   document.body.addEventListener('click', () => {

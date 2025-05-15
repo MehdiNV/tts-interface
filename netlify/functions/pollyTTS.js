@@ -12,6 +12,7 @@ const polly = new AWS.Polly({
 
 exports.handler = async function(event) {
   try {
+    console.log('Incoming request body:', event.body);
     const { text, languageCode, voiceId } = JSON.parse(event.body);
 
     if (!text || !languageCode) {
@@ -42,10 +43,10 @@ exports.handler = async function(event) {
     };
 
   } catch (error) {
-    console.error('Polly error:', error);
+    console.error('Polly error:', error.message, error.stack);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message })
+      body: JSON.stringify({ error: error.message, details: error.stack })
     };
   }
 };
