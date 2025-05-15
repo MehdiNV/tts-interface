@@ -11,24 +11,15 @@
   <title>Accessibility Reading Tools</title>
 </head>
 <body>
-  <div class="skip-link">
-    <a href="#main-content">Skip to main content</a>
-  </div>
-
-  <header>
-    <h1 class="sr-only">Accessibility Reading Tools</h1>
-  </header>
 
   <main id="main-content">
     <div class="text-input-container">
-      <label for="textInput" class="sr-only">Enter or transcribe text</label>
       <textarea
         id="textInput"
         placeholder="Type your text or click the microphone to speak..."
         aria-label="Text input area"
         aria-describedby="textHelp"
       ></textarea>
-      <div id="textHelp" class="sr-only">Use the buttons below to read or record text.</div>
     </div>
 
     <div class="controls">
@@ -37,10 +28,6 @@
       <button id="clearButton" aria-label="Clear text"><span aria-hidden="true">✕</span> Clear</button>
     </div>
   </main>
-
-  <footer>
-    <p class="sr-only">Accessibility tools for visually impaired users</p>
-  </footer>
 
   <script src="javascript/index.js"></script>
 </body>
