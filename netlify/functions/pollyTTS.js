@@ -13,7 +13,7 @@ const polly = new AWS.Polly({
 exports.handler = async function(event) {
   try {
     console.log('Incoming request body:', event.body);
-    const { text, languageCode, voiceId } = JSON.parse(event.body);
+    const { text, languageCode, voiceId, isSSML } = JSON.parse(event.body);
 
     if (!text || !languageCode) {
       return {
@@ -25,7 +25,7 @@ exports.handler = async function(event) {
     const params = {
       OutputFormat: 'mp3',
       Text: text,
-      TextType: 'text',
+      TextType: isSSML ? 'ssml' : 'text',
       VoiceId: voiceId || getDefaultVoice(languageCode),
       LanguageCode: languageCode
     };

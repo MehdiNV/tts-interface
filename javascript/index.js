@@ -13,6 +13,7 @@ let audioContext;
 let gainNode;
 let destination;
 let recordingStartTime = null;
+let currentRate = 'slow';
 
 function waitForVoices() {
   return new Promise((resolve) => {
@@ -67,10 +68,12 @@ function speakText(text) {
   isSpeaking = true;
   playButton.innerHTML = "⏸ Pause";
 
+  const ssml = `<speak><prosody rate="${currentRate}">${text}</prosody></speak>`;
+
   fetch('/.netlify/functions/pollyTTS', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, languageCode })
+    body: JSON.stringify({ text: ssml, languageCode, isSSML: true })
   })
     .then(response => response.blob())
     .then(audioBlob => {
@@ -92,6 +95,8 @@ function speakText(text) {
       isSpeaking = false;
       playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
     });
+
+    currentRate = currentRate === 'slow' ? 'x-slow' : 'slow';
 }
 
 function speakHoverText(text) {
