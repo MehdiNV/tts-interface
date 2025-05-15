@@ -50,42 +50,48 @@ function getPreferredVoice(lang) {
 
 function speakText(text) {
   if (isSpeaking) {
-    speechSynthesis.cancel();
     isSpeaking = false;
     return;
   }
   if (!text) return;
 
   const lang = detectLanguage(text);
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
-  const voice = getPreferredVoice(lang);
-  if (voice) {
-    utterance.voice = voice;
-    console.log('Using voice:', voice.name, voice.lang);
-  } else {
-    console.warn('No matching voice found for', lang);
-  }
-  utterance.rate = 0.85;
-  utterance.pitch = 1.0;
-  utterance.volume = 1.0;
-
-  utterance.onstart = () => {
-    isSpeaking = true;
-    playButton.innerHTML = "⏸ Pause";
+  const languageMap = {
+    'en-US': 'en-US',
+    'de-DE': 'de-DE',
+    'fa-IR': 'fa-IR'
   };
 
-  utterance.onend = () => {
-    isSpeaking = false;
-    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-  };
+  const languageCode = languageMap[lang] || 'en-US';
 
-  utterance.onerror = () => {
-    isSpeaking = false;
-    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-  };
+  isSpeaking = true;
+  playButton.innerHTML = "⏸ Pause";
 
-  speechSynthesis.speak(utterance);
+  fetch('/.netlify/functions/pollyTTS', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, languageCode })
+  })
+    .then(response => response.blob())
+    .then(audioBlob => {
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.play();
+      audio.onended = () => {
+        isSpeaking = false;
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+      };
+      audio.onerror = () => {
+        console.error('Audio playback error');
+        isSpeaking = false;
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+      };
+    })
+    .catch(err => {
+      console.error('Polly TTS error:', err);
+      isSpeaking = false;
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+    });
 }
 
 function speakHoverText(text) {
