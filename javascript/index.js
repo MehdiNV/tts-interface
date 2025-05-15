@@ -244,23 +244,27 @@ clearButton.addEventListener('click', clearText);
 micButton.addEventListener('click', toggleRecording);
 
 document.addEventListener('keydown', e => {
-  if (e.key === ' ' && document.activeElement !== textArea) {
+  const isTyping = document.activeElement === textArea;
+
+  if (!isTyping && e.key === ' ') {
     e.preventDefault();
     speakText(textArea.value.trim());
   }
+  if (!isTyping && e.key.toLowerCase() === 'r') {
+    toggleRecording();
+  }
+  if (!isTyping && e.key.toLowerCase() === 'p') {
+    speakText(textArea.value.trim());
+  }
+  if (!isTyping && e.key.toLowerCase() === 'c') {
+    clearText();
+  }
+
   if (e.key === 'Escape') {
     clearText();
   }
-  if (e.key.toLowerCase() === 'r') {
-    toggleRecording();
-  }
-  if (e.key.toLowerCase() === 'p') {
-    speakText(textArea.value.trim());
-  }
-  if (e.key.toLowerCase() === 'c') {
-    clearText();
-  }
-  if (e.shiftKey && e.key === '?') {
+
+  if (!isTyping && e.shiftKey && e.key === '?') {
     announce('Tastenkombinationen: R für Aufnahme, P für Wiedergabe, C für Löschen, Escape zum Leeren des Texts, Leertaste zum Abspielen');
   }
 });
