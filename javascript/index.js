@@ -1,5 +1,3 @@
-// combinedScript.js
-
 const textArea = document.getElementById('textInput');
 const playButton = document.getElementById('playButton');
 const micButton = document.getElementById('micButton');
@@ -68,6 +66,9 @@ function speakText(text) {
   } else {
     console.warn('No matching voice found for', lang);
   }
+  utterance.rate = 0.85;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
 
   utterance.onstart = () => {
     isSpeaking = true;
@@ -92,6 +93,9 @@ function speakHoverText(text) {
   utterance.lang = 'de-DE';
   const voice = getPreferredVoice('de-DE');
   if (voice) utterance.voice = voice;
+  utterance.rate = 0.85;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
   speechSynthesis.cancel();
   speechSynthesis.speak(utterance);
 }
@@ -101,6 +105,9 @@ function announce(text, lang = 'de-DE') {
   utterance.lang = lang;
   const voice = getPreferredVoice(lang);
   if (voice) utterance.voice = voice;
+  utterance.rate = 0.85;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
   speechSynthesis.speak(utterance);
 }
 
