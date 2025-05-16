@@ -29,6 +29,16 @@ function waitForVoices() {
   });
 }
 
+function interruptAudioPlayback() {
+  if (isSpeaking && currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+    isSpeaking = false;
+    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+  }
+}
+
 function detectLanguage(text) {
   if (/[؀-ۿ]/.test(text)) return 'fa-IR';
   if (/[\u00C0-\u024F]/.test(text) || /\b(und|ist|nicht|das|ein)\b/i.test(text)) return 'de-DE';
@@ -97,7 +107,7 @@ function speakText(text) {
         currentAudio = null;
         playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
       };
-      
+
       audio.onended = () => {
         isSpeaking = false;
         playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
@@ -141,12 +151,15 @@ function announce(text, lang = 'de-DE') {
 }
 
 function clearText() {
+  interruptAudioPlayback();
   textArea.value = '';
   textArea.focus();
   announce('Text gelöscht');
 }
 
 async function toggleRecording() {
+  interruptAudioPlayback();
+  
   if (!isRecording) {
     try {
       audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
