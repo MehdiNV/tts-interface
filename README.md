@@ -1,5 +1,8 @@
 # tts-interface
-Interface for the elderly and the visually-impaired; designed to have a easily readable piece of software that can read or write on their behalf
+An interface that I created for my grandfather, in order to make reading and
+writing easier for his eyes. This program is applicable for anyone who is visually
+impaired, feel free to fork this repository or to make use of it as you wish -
+as long as it helps people, I'm happy.
 
 Front-end:
 Mixture of simple HTML, CSS and javascript
