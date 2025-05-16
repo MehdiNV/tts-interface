@@ -14,6 +14,7 @@ let gainNode;
 let destination;
 let recordingStartTime = null;
 let currentRate = 'slow';
+let currentAudio = null;
 
 function waitForVoices() {
   return new Promise((resolve) => {
@@ -50,8 +51,11 @@ function getPreferredVoice(lang) {
 }
 
 function speakText(text) {
-  if (isSpeaking) {
+  if (isSpeaking && currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
     isSpeaking = false;
+    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
     return;
   }
   if (!text) return;
@@ -79,7 +83,21 @@ function speakText(text) {
     .then(audioBlob => {
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
+      currentAudio = audio;
+
       audio.play();
+      audio.onended = () => {
+        isSpeaking = false;
+        currentAudio = null;
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+      };
+      audio.onerror = () => {
+        console.error('Audio playback error');
+        isSpeaking = false;
+        currentAudio = null;
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+      };
+      
       audio.onended = () => {
         isSpeaking = false;
         playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
