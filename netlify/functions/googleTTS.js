@@ -1,7 +1,4 @@
 // netlify/functions/googleTTS.js
-const path = require('path');
-process.env.GOOGLE_APPLICATION_CREDENTIALS = path.join(__dirname, '../../gcloud-service-key.json');
-
 const textToSpeech = require('@google-cloud/text-to-speech');
 const fs = require('fs');
 const path = require('path');
@@ -42,8 +39,8 @@ exports.handler = async function (event) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        audioContent: response.audioContent, // base64 MP3
-        timepoints: response.timepoints      // Array of words + timestamps
+        audioContent: Buffer.from(response.audioContent).toString('base64'),
+        timepoints: response.timepoints
       }),
     };
   } catch (err) {

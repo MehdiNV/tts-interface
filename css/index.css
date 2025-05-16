@@ -22,30 +22,51 @@ main {
   align-items: center;
 }
 
-.text-input-container {
-  width: 100%;
-  margin-bottom: 30px;
-  padding: 0 20px; /* Add horizontal padding to prevent touching window edge */
-  box-sizing: border-box;
+#playButton.playing {
+  background-color: orange;
+  box-shadow: 0 0 10px orange;
 }
 
-#textInput {
+
+#textDisplay {
   width: 100%;
-  height: 50vh; /* Around 50% of viewport height */
-  font-size: 1.6em; /* Slightly larger font size */
+  height: 50vh;
+  font-size: 1.6em;
   color: black;
   background-color: white;
   padding: 20px;
   border: 6px solid yellow;
   border-radius: 10px;
-  resize: none;
   box-sizing: border-box;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
-#textInput:focus {
+#textDisplay:focus {
   outline: 3px dashed black;
   outline-offset: 5px;
   box-shadow: 0 0 10px yellow;
+}
+
+.word {
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.word.spoken {
+  background-color: orange;
+}
+
+.word.current {
+  background-color: red;
+  font-weight: bold;
+}
+
+.text-input-container {
+  width: 100%;
+  margin-bottom: 30px;
+  padding: 0 20px; /* Add horizontal padding to prevent touching window edge */
+  box-sizing: border-box;
 }
 
 .controls {
@@ -110,10 +131,6 @@ footer {
 }
 
 @media (max-width: 600px) {
-  #textInput {
-    height: 40vh;
-    font-size: 1.4em;
-  }
 
   .controls {
     flex-direction: column;

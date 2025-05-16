@@ -1,4 +1,4 @@
-const textArea = document.getElementById('textInput');
+const textDisplay = document.getElementById('textDisplay');
 const playButton = document.getElementById('playButton');
 const micButton = document.getElementById('micButton');
 const clearButton = document.getElementById('clearButton');
@@ -18,9 +18,9 @@ let currentAudio = null;
 
 function waitForVoices() {
   return new Promise((resolve) => {
-    const voices = speechSynthesis.getVoices();
-    if (voices.length > 0) {
-      resolve(voices);
+    const v = speechSynthesis.getVoices();
+    if (v.length > 0) {
+      resolve(v);
     } else {
       speechSynthesis.onvoiceschanged = () => {
         resolve(speechSynthesis.getVoices());
@@ -35,131 +35,31 @@ function interruptAudioPlayback() {
     currentAudio.currentTime = 0;
     currentAudio = null;
     isSpeaking = false;
+    playButton.classList.remove('playing');
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+
+    // Clear highlights
+    const spans = document.querySelectorAll('#textDisplay .word');
+    spans.forEach(span => span.classList.remove('spoken', 'current'));
   }
 }
 
 function detectLanguage(text) {
   if (/[؀-ۿ]/.test(text)) return 'fa-IR';
-  if (/[\u00C0-\u024F]/.test(text) || /\b(und|ist|nicht|das|ein)\b/i.test(text)) return 'de-DE';
+  if (/[À-ɏ]/.test(text) || /\b(und|ist|nicht|das|ein)\b/i.test(text)) return 'de-DE';
   return 'en-US';
-}
-
-function getPreferredVoice(lang) {
-  const preferredNames = {
-    'de-DE': ['Google Deutsch', 'Anna', 'Flo', 'Grandma', 'Helena', 'Martin'],
-    'en-US': ['Google US English', 'Samantha', 'Aaron'],
-    'en-GB': ['Google UK English Female', 'Daniel'],
-    'fa-IR': ['Dariush']
-  };
-  const list = preferredNames[lang] || [];
-  for (const name of list) {
-    const match = voices.find(v => v.name === name && v.lang === lang);
-    if (match) return match;
-  }
-  return voices.find(v => v.lang === lang);
-}
-
-function speakText(text) {
-  if (isSpeaking && currentAudio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-    isSpeaking = false;
-    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-    return;
-  }
-  if (!text) return;
-
-  const lang = detectLanguage(text);
-  const languageMap = {
-    'en-US': 'en-US',
-    'de-DE': 'de-DE',
-    'fa-IR': 'fa-IR'
-  };
-
-  const languageCode = languageMap[lang] || 'en-US';
-
-  isSpeaking = true;
-  playButton.innerHTML = "⏸ Pause";
-
-  const ssml = `<speak><prosody rate="${currentRate}">${text}</prosody></speak>`;
-
-  fetch('/.netlify/functions/pollyTTS', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: ssml, languageCode, isSSML: true })
-  })
-    .then(response => response.blob())
-    .then(audioBlob => {
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      currentAudio = audio;
-
-      audio.play();
-      audio.onended = () => {
-        isSpeaking = false;
-        currentAudio = null;
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-      };
-      audio.onerror = () => {
-        console.error('Audio playback error');
-        isSpeaking = false;
-        currentAudio = null;
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-      };
-
-      audio.onended = () => {
-        isSpeaking = false;
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-      };
-      audio.onerror = () => {
-        console.error('Audio playback error');
-        isSpeaking = false;
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-      };
-    })
-    .catch(err => {
-      console.error('Polly TTS error:', err);
-      isSpeaking = false;
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-    });
-
-    currentRate = currentRate === 'slow' ? 'x-slow' : 'slow';
-}
-
-function speakHoverText(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'de-DE';
-  const voice = getPreferredVoice('de-DE');
-  if (voice) utterance.voice = voice;
-  utterance.rate = 0.85;
-  utterance.pitch = 1.0;
-  utterance.volume = 1.0;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utterance);
-}
-
-function announce(text, lang = 'de-DE') {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
-  const voice = getPreferredVoice(lang);
-  if (voice) utterance.voice = voice;
-  utterance.rate = 0.85;
-  utterance.pitch = 1.0;
-  utterance.volume = 1.0;
-  speechSynthesis.speak(utterance);
 }
 
 function clearText() {
   interruptAudioPlayback();
-  textArea.value = '';
-  textArea.focus();
+  textDisplay.innerText = '';
+  textDisplay.focus();
   announce('Text gelöscht');
 }
 
 async function toggleRecording() {
   interruptAudioPlayback();
-  
+
   if (!isRecording) {
     try {
       audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -193,7 +93,7 @@ async function toggleRecording() {
 
           const data = await response.json();
           if (data.text) {
-            textArea.value = data.text;
+            textDisplay.innerText = data.text;
             announce('Transkription abgeschlossen');
           } else {
             announce('Fehler bei der Transkription');
@@ -223,78 +123,135 @@ async function toggleRecording() {
   }
 }
 
+async function speakWithGoogleTTS(text) {
+  if (!text) return;
+  if (isSpeaking) {
+    interruptAudioPlayback();
+    return;
+  }
 
+  const languageCode = detectLanguage(text);
+
+  isSpeaking = true;
+  playButton.classList.add('playing');
+  playButton.innerHTML = "⏸ Pause";
+
+  try {
+    const response = await fetch('/.netlify/functions/googleTTS', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, languageCode })
+    });
+
+    const { audioContent, timepoints } = await response.json();
+
+    const audioBlob = new Blob([Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    currentAudio = audio;
+
+    highlightTextByWords(text);
+    const wordSpans = document.querySelectorAll('#textDisplay .word');
+
+    audio.ontimeupdate = () => {
+      const currentTime = audio.currentTime;
+      if (!timepoints || !timepoints.length) return;
+
+      let i = 0;
+      for (; i < timepoints.length; i++) {
+        const start = parseFloat(timepoints[i].startTime.replace('s', ''));
+        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].startTime.replace('s', '')) : Infinity;
+        if (currentTime >= start && currentTime < nextStart) break;
+      }
+
+      wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
+      for (let j = 0; j < i; j++) wordSpans[j].classList.add('spoken');
+      if (i < wordSpans.length) wordSpans[i].classList.add('current');
+    };
+
+    audio.onended = () => {
+      isSpeaking = false;
+      currentAudio = null;
+      playButton.classList.remove('playing');
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+      const spans = document.querySelectorAll('#textDisplay .word');
+      spans.forEach(span => span.classList.remove('spoken', 'current'));
+    };
+
+    audio.play();
+
+  } catch (err) {
+    console.error('Google TTS error:', err);
+    isSpeaking = false;
+    playButton.classList.remove('playing');
+    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+  }
+}
+
+function highlightTextByWords(text) {
+  const words = text.trim().split(/\s+/);
+  const html = words.map(word => `<span class="word">${word}</span>`).join(' ');
+  textDisplay.innerHTML = html;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
-
-  // Unlock speech synthesis voices on first user interaction (Chrome/macOS workaround)
-
-
-  // Wait until voices are ready
   voices = await waitForVoices();
   console.log('Loaded voices:', voices.map(v => v.name + ' [' + v.lang + ']').join(', '));
 
-  console.log('Voices loaded');
-
-  // Disables voiceover narration
-  // micButton.addEventListener('mouseenter', () => speakHoverText('Spracheingabe starten oder stoppen'));
-  // playButton.addEventListener('mouseenter', () => speakHoverText('Text vorlesen'));
-  // clearButton.addEventListener('mouseenter', () => speakHoverText('Text löschen'));
-  // textArea.addEventListener('focus', () => speakHoverText('Geben Sie hier Ihren Text ein oder diktieren Sie ihn'));
-
-  // Unlock speech synthesis voices on first user interaction (Chrome/macOS workaround)
   document.body.addEventListener('click', () => {
     const unlock = new SpeechSynthesisUtterance(' ');
     unlock.volume = 0;
     speechSynthesis.speak(unlock);
   }, { once: true });
+
   const shortcutInfo = document.createElement('div');
   shortcutInfo.className = 'keyboard-shortcuts';
   shortcutInfo.setAttribute('aria-hidden', 'true');
-  shortcutInfo.innerHTML = `
-    <h2>Tastenkombinationen</h2>
-    <ul>
-      <li><strong>R</strong>: Aufnahme starten/stoppen</li>
-      <li><strong>P</strong>: Text vorlesen</li>
-      <li><strong>C</strong>: Text löschen</li>
-      <li><strong>Escape</strong>: Text löschen</li>
-      <li><strong>Leertaste</strong>: Text abspielen/pause</li>
-      <li><strong>Shift + ?</strong>: Tastenkombinationen vorlesen</li>
-    </ul>
-  `;
+
+  const heading = document.createElement('h2');
+  heading.textContent = 'Tastenkombinationen';
+
+  const list = document.createElement('ul');
+  [
+    ['R', 'Aufnahme starten/stoppen'],
+    ['P', 'Text vorlesen'],
+    ['C', 'Text löschen'],
+    ['Escape', 'Text löschen'],
+    ['Leertaste', 'Text abspielen/pause'],
+    ['Shift + ?', 'Tastenkombinationen vorlesen']
+  ].forEach(([key, label]) => {
+    const li = document.createElement('li');
+    const strong = document.createElement('strong');
+    strong.textContent = key;
+    li.appendChild(strong);
+    li.append(`: ${label}`);
+    list.appendChild(li);
+  });
+
+  shortcutInfo.appendChild(heading);
+  shortcutInfo.appendChild(list);
   document.body.appendChild(shortcutInfo);
-  textArea.focus();
+
+  textDisplay.focus();
 });
 
 playButton.addEventListener('click', () => {
-  speakText(textArea.value.trim());
+  speakWithGoogleTTS(textDisplay.innerText.trim());
 });
 
 clearButton.addEventListener('click', clearText);
-
 micButton.addEventListener('click', toggleRecording);
 
 document.addEventListener('keydown', e => {
-  const isTyping = document.activeElement === textArea;
-
+  const isTyping = document.activeElement === textDisplay;
   if (!isTyping && e.key === ' ') {
     e.preventDefault();
-    speakText(textArea.value.trim());
+    speakWithGoogleTTS(textDisplay.innerText.trim());
   }
-  if (!isTyping && e.key.toLowerCase() === 'r') {
-    toggleRecording();
-  }
-  if (!isTyping && e.key.toLowerCase() === 'p') {
-    speakText(textArea.value.trim());
-  }
-  if (!isTyping && e.key.toLowerCase() === 'c') {
-    clearText();
-  }
-
-  if (e.key === 'Escape') {
-    clearText();
-  }
-
+  if (!isTyping && e.key.toLowerCase() === 'r') toggleRecording();
+  if (!isTyping && e.key.toLowerCase() === 'p') speakWithGoogleTTS(textDisplay.innerText.trim());
+  if (!isTyping && e.key.toLowerCase() === 'c') clearText();
+  if (e.key === 'Escape') clearText();
   if (!isTyping && e.shiftKey && e.key === '?') {
     announce('Tastenkombinationen: R für Aufnahme, P für Wiedergabe, C für Löschen, Escape zum Leeren des Texts, Leertaste zum Abspielen');
   }
