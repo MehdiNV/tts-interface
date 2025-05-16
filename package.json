@@ -21,6 +21,7 @@
     "electron": "^35.1.4"
   },
   "dependencies": {
+    "@google-cloud/text-to-speech": "^6.1.0",
     "aws-sdk": "^2.1692.0",
     "electron-reload": "^2.0.0-alpha.1"
   }

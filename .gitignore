@@ -137,3 +137,6 @@ dist
 
 # Local Netlify folder
 .netlify
+
+# GCloud authentication data
+gcloud-service-key.json
