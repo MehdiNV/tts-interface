@@ -55,12 +55,15 @@ main {
 
 .word.spoken {
   background-color: orange;
+  transition: background-color 0.3s ease;
 }
 
 .word.current {
   background-color: red;
   font-weight: bold;
+  transition: background-color 0.3s ease;
 }
+
 
 .text-input-container {
   width: 100%;
@@ -130,8 +133,24 @@ footer {
   width: 100%;
 }
 
-@media (max-width: 600px) {
+#textDisplay .word.current {
+  background-color: red !important;
+  color: white !important;
+  outline: 2px solid yellow !important;
+  font-weight: bold !important;
+  padding: 4px 6px !important;
+  transition: none !important;
+}
 
+#textDisplay .word.spoken {
+  background-color: orange !important;
+  color: black !important;
+  font-weight: normal !important;
+  transition: none !important;
+}
+
+
+@media (max-width: 600px) {
   .controls {
     flex-direction: column;
     gap: 20px;
