@@ -61,20 +61,25 @@ function highlightTextByWords(text) {
   wordMap = {};
   textDisplay.innerHTML = '';
 
-  // Handle RTL
+  // Detect and apply RTL direction
   const isRTL = /[؀-ۿ]/.test(text);
   textDisplay.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+  textDisplay.style.textAlign = isRTL ? 'right' : 'left';
 
   words.forEach((word, index) => {
     const span = document.createElement('span');
     span.className = 'word';
     span.dataset.index = index;
+
+    // Clean punctuation for matching
     const clean = word.replace(/[“”‘’"',.?!:؛،]/g, '').toLowerCase();
-    wordMap[clean + '-' + index] = index;
+    wordMap[`${clean}-${index}`] = index;
+
     span.textContent = word + ' ';
     textDisplay.appendChild(span);
   });
 }
+
 
 
 async function toggleRecording() {
@@ -255,36 +260,40 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
 
     function trackAudioProgress() {
       if (!audio || audio.paused || audio.ended) return;
+
       const currentTime = audio.currentTime;
+      const isRTL = textDisplay.getAttribute('dir') === 'rtl';
 
-      for (let i = 0; i < timepoints.length; i++) {
-        const start = parseFloat(timepoints[i].timeSeconds || timepoints[i].start);
-        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds || timepoints[i + 1].start) : Infinity;
+      // Find the currently spoken word based on timestamp
+      const activeIndex = timepoints.findIndex(tp => {
+        const start = parseFloat(tp.start);
+        const end = parseFloat(tp.end);
+        return currentTime >= start && currentTime < end;
+      });
+      console.log(`🎧 time=${currentTime.toFixed(2)}s → activeIndex=${activeIndex}`);
 
-        if (currentTime >= start && currentTime < nextStart) {
-          const currentMark = timepoints[i].markName || timepoints[i].word;
-          const index = fuzzyMatch(currentMark, words);
+      if (activeIndex !== -1 && wordSpans[activeIndex]) {
+        wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
 
-          console.log(`🎯 Matching: '${currentMark}' → index ${index}`);
-
-          if (index !== -1) {
-            wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
-            for (let j = 0; j < index; j++) wordSpans[j].classList.add('spoken');
-            const currentSpan = wordSpans[index];
-            currentSpan.classList.add('current');
-            const isRTL = textDisplay.getAttribute('dir') === 'rtl';
-            currentSpan.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
-              inline: isRTL ? 'center' : 'nearest'
-            });
-          }
-          break;
+        // Mark all previous words as spoken
+        for (let j = 0; j < activeIndex; j++) {
+          wordSpans[j]?.classList.add('spoken');
         }
+
+        // Highlight the current word
+        const currentSpan = wordSpans[activeIndex];
+        currentSpan.classList.add('current');
+        currentSpan.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: isRTL ? 'center' : 'nearest'
+        });
       }
 
       requestAnimationFrame(trackAudioProgress);
     }
+
+
 
     audio.onended = () => {
       isSpeaking = false;
