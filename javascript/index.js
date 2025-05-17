@@ -16,6 +16,7 @@ let recordingStartTime = null;
 let currentRate = 'slow';
 let currentAudio = null;
 let wordMap = {};
+let wordSpans = [], words = [], timepoints = [];
 
 function waitForVoices() {
   return new Promise((resolve) => {
@@ -57,137 +58,68 @@ function clearText() {
 }
 
 function highlightTextByWords(text) {
-  const words = text.trim().split(/\s+/);
+  const wordArray = text.trim().split(/\s+/);
   wordMap = {};
   textDisplay.innerHTML = '';
 
-  // Detect and apply RTL direction
   const isRTL = /[؀-ۿ]/.test(text);
   textDisplay.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
   textDisplay.style.textAlign = isRTL ? 'right' : 'left';
 
-  words.forEach((word, index) => {
+  wordArray.forEach((word, index) => {
     const span = document.createElement('span');
     span.className = 'word';
     span.dataset.index = index;
 
-    // Clean punctuation for matching
     const clean = word.replace(/[“”‘’"',.?!:؛،]/g, '').toLowerCase();
     wordMap[`${clean}-${index}`] = index;
 
     span.textContent = word + ' ';
     textDisplay.appendChild(span);
   });
+
+  wordSpans = document.querySelectorAll('#textDisplay .word');
+  words = wordArray.map(word => word.replace(/[“”‘’"',.?!:؛،]/g, '').toLowerCase());
 }
 
+function trackAudioProgress() {
+  if (!currentAudio || currentAudio.paused || currentAudio.ended) return;
 
+  const currentTime = currentAudio.currentTime;
+  const isRTL = textDisplay.getAttribute('dir') === 'rtl';
+  let activeIndex = -1;
 
-async function toggleRecording() {
-  interruptAudioPlayback();
-
-  if (!isRecording) {
-    try {
-      audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(audioStream);
-      gainNode = audioContext.createGain();
-      gainNode.gain.value = 2.0;
-      destination = audioContext.createMediaStreamDestination();
-      source.connect(gainNode);
-      gainNode.connect(destination);
-
-      mediaRecorder = new MediaRecorder(destination.stream);
-      audioChunks = [];
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        const duration = Math.round((Date.now() - recordingStartTime) / 1000);
-        audioStream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-        const formData = new FormData();
-        formData.append('file', blob, 'audio.webm');
-        formData.append('model', 'whisper-1');
-
-        try {
-          const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer YOUR_OPENAI_API_KEY`
-            },
-            body: formData
-          });
-
-          const data = await response.json();
-          if (data.text) {
-            textDisplay.innerText = data.text;
-            announce('Transkription abgeschlossen');
-          } else {
-            announce('Fehler bei der Transkription');
-          }
-        } catch (error) {
-          console.error('API call failed:', error);
-          announce('Verbindung zur Spracherkennung fehlgeschlagen');
-        }
-
-        announce(`Aufnahme gestoppt nach ${duration} Sekunden`);
-      };
-
-      mediaRecorder.start();
-      recordingStartTime = Date.now();
-      isRecording = true;
-      micButton.classList.add('recording');
-      announce('Aufnahme gestartet');
-
-    } catch (err) {
-      console.error('Microphone access error:', err);
-      announce('Mikrofonzugriff verweigert');
+  if (timepoints.length && 'start' in timepoints[0] && 'end' in timepoints[0]) {
+    activeIndex = timepoints.findIndex(tp =>
+      currentTime >= parseFloat(tp.start) &&
+      currentTime < parseFloat(tp.end)
+    );
+  } else if (timepoints.length && 'timeSeconds' in timepoints[0]) {
+    for (let i = 0; i < timepoints.length; i++) {
+      const thisTime = parseFloat(timepoints[i].timeSeconds);
+      const nextTime = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds) : Infinity;
+      if (currentTime >= thisTime && currentTime < nextTime) {
+        activeIndex = i;
+        break;
+      }
     }
-  } else {
-    mediaRecorder.stop();
-    isRecording = false;
-    micButton.classList.remove('recording');
   }
+
+  if (activeIndex !== -1 && wordSpans[activeIndex]) {
+    wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
+    for (let j = 0; j < activeIndex; j++) wordSpans[j]?.classList.add('spoken');
+
+    const currentSpan = wordSpans[activeIndex];
+    currentSpan.classList.add('current');
+    currentSpan.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: isRTL ? 'center' : 'nearest'
+    });
+  }
+
+  requestAnimationFrame(trackAudioProgress);
 }
-
-document.addEventListener('DOMContentLoaded', async () => {
-  voices = await waitForVoices();
-  console.log('Loaded voices:', voices.map(v => v.name + ' [' + v.lang + ']').join(', '));
-
-  document.body.addEventListener('click', () => {
-    const unlock = new SpeechSynthesisUtterance(' ');
-    unlock.volume = 0;
-    speechSynthesis.speak(unlock);
-  }, { once: true });
-
-  const shortcutInfo = document.createElement('div');
-  shortcutInfo.className = 'keyboard-shortcuts';
-  shortcutInfo.setAttribute('aria-hidden', 'true');
-
-  const heading = document.createElement('h2');
-  heading.textContent = 'Tastenkombinationen';
-
-  const list = document.createElement('ul');
-  [
-    ['R', 'Aufnahme starten/stoppen'],
-    ['P', 'Text vorlesen'],
-    ['C', 'Text löschen'],
-    ['Escape', 'Text löschen'],
-    ['Leertaste', 'Text abspielen/pause'],
-    ['Shift + ?', 'Tastenkombinationen vorlesen']
-  ].forEach(([key, label]) => {
-    const li = document.createElement('li');
-    const strong = document.createElement('strong');
-    strong.textContent = key;
-    li.appendChild(strong);
-    li.append(`: ${label}`);
-    list.appendChild(li);
-  });
-
-  shortcutInfo.appendChild(heading);
-  shortcutInfo.appendChild(list);
-  document.body.appendChild(shortcutInfo);
-
-  textDisplay.focus();
-});
 
 function convertTextToSSML(text) {
   const words = text.trim().split(/\s+/);
@@ -235,9 +167,18 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
     }
 
     const audioContent = result.audioContent;
-    const timepoints = result.timepoints || [];
+    timepoints = result.timepoints || [];
 
-    console.log('🧩 Timepoints returned:', timepoints);
+    // Adjust Google TTS timestamps back slightly to compensate for delayed <mark>
+    const G_TTS_OFFSET = 0.3;
+    if (timepoints.length && 'timeSeconds' in timepoints[0]) {
+      timepoints = timepoints.map(tp => ({
+        ...tp,
+        timeSeconds: Math.max(0, parseFloat(tp.timeSeconds) - G_TTS_OFFSET).toFixed(3)
+      }));
+    }
+
+    console.log('🧩 Timepoints returned (adjusted):', timepoints);
 
     const audioBlob = new Blob([Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
     const audioUrl = URL.createObjectURL(audioBlob);
@@ -245,63 +186,15 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
     currentAudio = audio;
 
     highlightTextByWords(originalText);
-    const wordSpans = document.querySelectorAll('#textDisplay .word');
-    const words = originalText.trim().split(/\s+/).map(word => word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase());
-
-    console.log('🧵 Parsed original words:', words);
-
-    function fuzzyMatch(target, candidates) {
-      target = target.toLowerCase();
-      for (let i = 0; i < candidates.length; i++) {
-        if (candidates[i] === target) return i;
-      }
-      return -1;
-    }
-
-    function trackAudioProgress() {
-      if (!audio || audio.paused || audio.ended) return;
-
-      const currentTime = audio.currentTime;
-      const isRTL = textDisplay.getAttribute('dir') === 'rtl';
-
-      // Find the currently spoken word based on timestamp
-      const activeIndex = timepoints.findIndex(tp => {
-        const start = parseFloat(tp.start);
-        const end = parseFloat(tp.end);
-        return currentTime >= start && currentTime < end;
-      });
-      console.log(`🎧 time=${currentTime.toFixed(2)}s → activeIndex=${activeIndex}`);
-
-      if (activeIndex !== -1 && wordSpans[activeIndex]) {
-        wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
-
-        // Mark all previous words as spoken
-        for (let j = 0; j < activeIndex; j++) {
-          wordSpans[j]?.classList.add('spoken');
-        }
-
-        // Highlight the current word
-        const currentSpan = wordSpans[activeIndex];
-        currentSpan.classList.add('current');
-        currentSpan.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: isRTL ? 'center' : 'nearest'
-        });
-      }
-
-      requestAnimationFrame(trackAudioProgress);
-    }
-
-
 
     audio.onended = () => {
       isSpeaking = false;
       currentAudio = null;
       playButton.classList.remove('playing');
       playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-      const spans = document.querySelectorAll('#textDisplay .word');
-      spans.forEach(span => span.classList.remove('spoken', 'current'));
+      document.querySelectorAll('#textDisplay .word').forEach(span =>
+        span.classList.remove('spoken', 'current')
+      );
     };
 
     audio.onplay = () => {
@@ -324,18 +217,14 @@ playButton.addEventListener('click', () => {
   speakWithGoogleTTS(ssml, originalText);
 });
 
-
-
-
-
-
 clearButton.addEventListener('click', () => {
   interruptAudioPlayback();
   textDisplay.innerText = '';
   textDisplay.focus();
 });
 
-micButton.addEventListener('click', toggleRecording);
+micButton.addEventListener('click', toggleRecording); // unchanged from earlier
+
 
 document.addEventListener('keydown', (e) => {
   const isTyping = document.activeElement === textDisplay;
