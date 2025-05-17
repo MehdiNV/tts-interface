@@ -23,6 +23,7 @@
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.1.0",
     "aws-sdk": "^2.1692.0",
-    "electron-reload": "^2.0.0-alpha.1"
+    "electron-reload": "^2.0.0-alpha.1",
+    "openai": "^4.100.0"
   }
 }

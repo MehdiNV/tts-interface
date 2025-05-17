@@ -60,16 +60,22 @@ function highlightTextByWords(text) {
   const words = text.trim().split(/\s+/);
   wordMap = {};
   textDisplay.innerHTML = '';
+
+  // Handle RTL
+  const isRTL = /[؀-ۿ]/.test(text);
+  textDisplay.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+
   words.forEach((word, index) => {
     const span = document.createElement('span');
     span.className = 'word';
     span.dataset.index = index;
-    const clean = word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase();
+    const clean = word.replace(/[“”‘’"',.?!:؛،]/g, '').toLowerCase();
     wordMap[clean + '-' + index] = index;
     span.textContent = word + ' ';
     textDisplay.appendChild(span);
   });
 }
+
 
 async function toggleRecording() {
   interruptAudioPlayback();
@@ -202,12 +208,16 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
     isSSML: useSSML
   };
 
+  const endpoint = languageCode === 'fa-IR'
+    ? '/.netlify/functions/openaiFarsiTTS'
+    : '/.netlify/functions/googleTTS';
+
   isSpeaking = true;
   playButton.classList.add('playing');
   playButton.innerHTML = "⏸ Pause";
 
   try {
-    const response = await fetch('/.netlify/functions/googleTTS', {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -215,12 +225,14 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
 
     const result = await response.json();
     if (!response.ok || !result.audioContent) {
-      console.error('Google TTS error response:', result);
-      throw new Error(result.error || 'Invalid audio response from Google TTS');
+      console.error('TTS error response:', result);
+      throw new Error(result.error || 'Invalid audio response');
     }
 
     const audioContent = result.audioContent;
     const timepoints = result.timepoints || [];
+
+    console.log('🧩 Timepoints returned:', timepoints);
 
     const audioBlob = new Blob([Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
     const audioUrl = URL.createObjectURL(audioBlob);
@@ -231,24 +243,41 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
     const wordSpans = document.querySelectorAll('#textDisplay .word');
     const words = originalText.trim().split(/\s+/).map(word => word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase());
 
+    console.log('🧵 Parsed original words:', words);
+
+    function fuzzyMatch(target, candidates) {
+      target = target.toLowerCase();
+      for (let i = 0; i < candidates.length; i++) {
+        if (candidates[i] === target) return i;
+      }
+      return -1;
+    }
+
     function trackAudioProgress() {
       if (!audio || audio.paused || audio.ended) return;
       const currentTime = audio.currentTime;
 
       for (let i = 0; i < timepoints.length; i++) {
-        const start = parseFloat(timepoints[i].timeSeconds);
-        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds) : Infinity;
+        const start = parseFloat(timepoints[i].timeSeconds || timepoints[i].start);
+        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds || timepoints[i + 1].start) : Infinity;
 
         if (currentTime >= start && currentTime < nextStart) {
-          const currentMark = timepoints[i].markName.toLowerCase();
-          const index = words.findIndex(w => w === currentMark);
+          const currentMark = timepoints[i].markName || timepoints[i].word;
+          const index = fuzzyMatch(currentMark, words);
+
+          console.log(`🎯 Matching: '${currentMark}' → index ${index}`);
 
           if (index !== -1) {
             wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
             for (let j = 0; j < index; j++) wordSpans[j].classList.add('spoken');
             const currentSpan = wordSpans[index];
             currentSpan.classList.add('current');
-            currentSpan.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+            const isRTL = textDisplay.getAttribute('dir') === 'rtl';
+            currentSpan.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: isRTL ? 'center' : 'nearest'
+            });
           }
           break;
         }
@@ -273,7 +302,7 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
     audio.play();
 
   } catch (err) {
-    console.error('Google TTS error:', err);
+    console.error('TTS error:', err);
     isSpeaking = false;
     playButton.classList.remove('playing');
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
@@ -285,6 +314,8 @@ playButton.addEventListener('click', () => {
   const ssml = convertTextToSSML(originalText);
   speakWithGoogleTTS(ssml, originalText);
 });
+
+
 
 
 

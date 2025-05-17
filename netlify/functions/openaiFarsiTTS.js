@@ -1,70 +1,77 @@
+// netlify/functions/openaiFarsiTTS.js
+
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch');
 const { v4: uuidv4 } = require('uuid');
 const os = require('os');
+const OpenAI = require('openai');
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 exports.handler = async function (event) {
+  console.log('📥 Incoming request:', event.body);
+
   try {
     const { text, languageCode = 'fa-IR' } = JSON.parse(event.body);
 
     if (!text || languageCode !== 'fa-IR') {
+      console.warn('⚠️ Invalid input:', { text, languageCode });
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Invalid request for Farsi TTS' })
       };
     }
 
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-    if (!OPENAI_API_KEY) throw new Error('Missing OpenAI API Key');
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('Missing OpenAI API Key');
+    }
 
-    const ttsResponse = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'tts-1',
-        input: text,
-        voice: 'alloy',
-        response_format: 'mp3',
-        language: 'fa'
-      })
+    // Step 1: Text-to-Speech
+    console.log('🗣️ Generating speech for text...');
+    const speechResponse = await openai.audio.speech.create({
+      model: 'tts-1',
+      input: text,
+      voice: 'alloy',
+      response_format: 'mp3',
+      language: 'fa'
     });
 
-    const audioBuffer = Buffer.from(await ttsResponse.arrayBuffer());
+    console.log('✅ Speech generated successfully. Reading audio buffer...');
+    const audioBuffer = Buffer.from(await speechResponse.arrayBuffer());
+    console.log('🧊 Buffer size:', audioBuffer.length);
+
     const tempPath = path.join(os.tmpdir(), `${uuidv4()}.mp3`);
     fs.writeFileSync(tempPath, audioBuffer);
+    console.log('💾 Audio file saved at:', tempPath);
 
-    const formData = new FormData();
-    formData.append('file', fs.createReadStream(tempPath));
-    formData.append('model', 'whisper-1');
-    formData.append('response_format', 'verbose_json');
-    formData.append('timestamp_granularity', 'word');
-
-    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: formData
+    // Step 2: Transcription
+    console.log('📝 Transcribing audio with word-level timestamps...');
+    const transcription = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(tempPath),
+      model: 'whisper-1',
+      response_format: 'verbose_json',
+      timestamp_granularities: ['word'],
+      language: 'fa'
     });
 
-    const whisperResult = await whisperResponse.json();
+    console.log('✅ Transcription successful');
+    console.dir(transcription, { depth: null });
+
+    // Cleanup
     fs.unlinkSync(tempPath);
+    console.log('🧹 Temporary file deleted');
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         audioContent: audioBuffer.toString('base64'),
-        timepoints: whisperResult.words || []
+        timepoints: transcription.words || []
       })
     };
 
   } catch (err) {
-    console.error('❌ Farsi TTS Error:', err);
+    console.error('❌ Farsi TTS Error:', err.stack || err.message || err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message || 'Farsi TTS failure' })

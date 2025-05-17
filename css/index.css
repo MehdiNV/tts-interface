@@ -22,6 +22,11 @@ main {
   align-items: center;
 }
 
+#textDisplay[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
 #playButton.playing {
   background-color: orange;
   box-shadow: 0 0 10px orange;
