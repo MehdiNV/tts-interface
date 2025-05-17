@@ -195,6 +195,12 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
   }
 
   const languageCode = detectLanguage(originalText);
+  const useSSML = languageCode !== 'fa-IR';
+  const payload = {
+    text: useSSML ? ssmlText : originalText,
+    languageCode,
+    isSSML: useSSML
+  };
 
   isSpeaking = true;
   playButton.classList.add('playing');
@@ -204,7 +210,7 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
     const response = await fetch('/.netlify/functions/googleTTS', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: ssmlText, languageCode, isSSML: true })
+      body: JSON.stringify(payload)
     });
 
     const result = await response.json();
@@ -261,7 +267,7 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
     };
 
     audio.onplay = () => {
-      requestAnimationFrame(trackAudioProgress);
+      if (timepoints.length > 0) requestAnimationFrame(trackAudioProgress);
     };
 
     audio.play();
@@ -279,6 +285,7 @@ playButton.addEventListener('click', () => {
   const ssml = convertTextToSSML(originalText);
   speakWithGoogleTTS(ssml, originalText);
 });
+
 
 
 
