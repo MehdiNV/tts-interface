@@ -79,7 +79,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
   playButton.innerHTML = "⏸ Pause";
 
   if (languageCode !== 'fa-IR') {
-    utiliseGoogleTTS(textToVerbalise)
+    utiliseGoogleTTS(textToVerbalise, payload)
   }
   else {
     // TODO: Handle Persian verbalisation here
@@ -90,7 +90,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
 // Handles languages that read from left-to-right, such as English or German
 // For Farsi / Persian, we'll need to refer to OpenAI's TTS model as the language...
 // ...isn't currently supported fully in Google's TTS
-async function utiliseGoogleTTS(textToVerbalise) {
+async function utiliseGoogleTTS(textToVerbalise, payload) {
   try {
     const response = await fetch('/.netlify/functions/googleTTS', {
       method: 'POST',
@@ -112,9 +112,9 @@ async function utiliseGoogleTTS(textToVerbalise) {
     const audio = new Audio(audioUrl);
     currentAudio = audio;
 
-    highlightTextByWords(originalText);
+    highlightTextByWords(textToVerbalise);
     const wordSpans = document.querySelectorAll('#textDisplay .word');
-    const words = originalText.trim().split(/\s+/).map(word => word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase());
+    const words = textToVerbalise.trim().split(/\s+/).map(word => word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase());
 
     function trackAudioProgress() {
       if (!audio || audio.paused || audio.ended) return;
@@ -239,7 +239,7 @@ function clearText() {
 
 // Event listeners for the UI --------------------------------------------------
 playButton.addEventListener('click', () => {
-  const originalText = textDisplay.innerText.trim();
+  const textToVerbalise = textDisplay.innerText.trim();
   verbaliseTextViaTTS(textToVerbalise);
 });
 
