@@ -45,21 +45,6 @@ function interruptAudioPlayback() {
   }
 }
 
-function highlightTextByWords(text) {
-  const words = text.trim().split(/\s+/);
-  wordMap = {};
-  textDisplay.innerHTML = '';
-  words.forEach((word, index) => {
-    const span = document.createElement('span');
-    span.className = 'word';
-    span.dataset.index = index;
-    const clean = word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase();
-    wordMap[clean + '-' + index] = index;
-    span.textContent = word + ' ';
-    textDisplay.appendChild(span);
-  });
-}
-
 async function verbaliseTextViaTTS(textToVerbalise) {
   if (isCurrentlySpeaking) {
     interruptAudioPlayback();
@@ -67,24 +52,156 @@ async function verbaliseTextViaTTS(textToVerbalise) {
   }
 
   const languageCode = detectWhichLanguage(textToVerbalise);
-  const useSSML = languageCode !== 'fa-IR';
-  const payload = {
-    text: useSSML ? convertTextToSSML(textToVerbalise) : textToVerbalise,
-    languageCode,
-    isSSML: useSSML
-  };
 
   isCurrentlySpeaking = true;
   playButton.classList.add('playing');
   playButton.innerHTML = "⏸ Pause";
 
   if (languageCode !== 'fa-IR') {
+    const payload = {
+      text: convertTextToSSML(textToVerbalise),
+      languageCode,
+      isSSML: true
+    };
+
     utiliseGoogleTTS(textToVerbalise, payload)
   }
   else {
-    // TODO: Handle Persian verbalisation here
-    console.log("Error: Persian language isn't support yet")
+    const payload = {
+      text: textToVerbalise,
+      languageCode,
+      isSSML: false
+    };
+
+    utiliseOpenAiTTS(textToVerbalise, payload)
   }
+}
+
+function highlightTextByWordsRightToLeft(text) {
+  textDisplay.setAttribute('dir', 'rtl');
+  textDisplay.style.textAlign = 'right';
+
+  const words = text.trim().split(/\s+/);
+  wordMap = {};
+  textDisplay.innerHTML = '';
+
+  words.forEach((word, index) => {
+    const span = document.createElement('span');
+    span.className = 'word';
+    span.dataset.index = index;
+
+    const clean = word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase();
+    wordMap[clean + '-' + index] = index;
+
+    span.textContent = word + ' ';
+    textDisplay.appendChild(span);
+  });
+}
+
+// Handles languages that read from right-to-left, in paticular Farsi / Persian
+async function utiliseOpenAiTTS(textToVerbalise, payload) {
+  try {
+    const response = await fetch('/.netlify/functions/openaiFarsiTTS', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.audioContent) {
+      console.error('OpenAI TTS error response:', result);
+      throw new Error(result.error || 'Invalid audio response from OpenAI TTS');
+    }
+
+    const audioContent = result.audioContent;
+    const timepoints = result.timepoints || [];
+
+    const audioBlob = new Blob([Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    currentAudio = audio;
+
+    highlightTextByWordsRightToLeft(textToVerbalise);
+    const wordSpans = document.querySelectorAll('#textDisplay .word');
+    const words = textToVerbalise.trim().split(/\s+/).map(word => word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase());
+
+    function trackAudioProgress() {
+      if (!audio || audio.paused || audio.ended) return;
+
+      const currentTime = audio.currentTime;
+
+      // Find the currently spoken word based on timestamp
+      const activeIndex = timepoints.findIndex(tp => {
+        const start = parseFloat(tp.start);
+        const end = parseFloat(tp.end);
+        return currentTime >= start && currentTime < end;
+      });
+      
+      console.log(`🎧 time=${currentTime.toFixed(2)}s → activeIndex=${activeIndex}`);
+
+      if (activeIndex !== -1 && wordSpans[activeIndex]) {
+        wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
+
+        // Mark all previous words as spoken
+        for (let j = 0; j < activeIndex; j++) {
+          wordSpans[j]?.classList.add('spoken');
+        }
+
+        // Highlight the current word
+        const currentSpan = wordSpans[activeIndex];
+        currentSpan.classList.add('current');
+        currentSpan.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline:'center'
+        });
+      }
+
+      requestAnimationFrame(trackAudioProgress);
+    }
+
+    audio.onended = () => {
+      isCurrentlySpeaking = false;
+      currentAudio = null;
+      playButton.classList.remove('playing');
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+      const spans = document.querySelectorAll('#textDisplay .word');
+      spans.forEach(span => span.classList.remove('spoken', 'current'));
+    };
+
+    audio.onplay = () => {
+      if (timepoints.length > 0) requestAnimationFrame(trackAudioProgress);
+    };
+
+    audio.play();
+  }
+  catch (err) {
+    console.error('Google TTS error:', err);
+    isCurrentlySpeaking = false;
+    playButton.classList.remove('playing');
+    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+  }
+}
+
+function highlightTextByWordsLeftToRight(text) {
+  textDisplay.setAttribute('dir', 'ltr');
+  textDisplay.style.textAlign = 'left';
+
+  const words = text.trim().split(/\s+/);
+  wordMap = {};
+  textDisplay.innerHTML = '';
+
+  words.forEach((word, index) => {
+    const span = document.createElement('span');
+    span.className = 'word';
+    span.dataset.index = index;
+
+    const clean = word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase();
+    wordMap[clean + '-' + index] = index;
+
+    span.textContent = word + ' ';
+    textDisplay.appendChild(span);
+  });
 }
 
 // Handles languages that read from left-to-right, such as English or German
@@ -112,7 +229,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     const audio = new Audio(audioUrl);
     currentAudio = audio;
 
-    highlightTextByWords(textToVerbalise);
+    highlightTextByWordsLeftToRight(textToVerbalise);
     const wordSpans = document.querySelectorAll('#textDisplay .word');
     const words = textToVerbalise.trim().split(/\s+/).map(word => word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase());
 

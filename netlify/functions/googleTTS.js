@@ -16,8 +16,7 @@ exports.handler = async function (event) {
     // Voice selection based on language
     const voiceMap = {
       'en-US': 'en-US-Wavenet-D',
-      'de-DE': 'de-DE-Wavenet-B',
-      'fa-IR': 'fa-IR-Standard-A'
+      'de-DE': 'de-DE-Wavenet-B'
     };
 
     const voiceName = voiceMap[languageCode] || 'en-US-Wavenet-D';
