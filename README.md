@@ -10,4 +10,10 @@ Mixture of simple HTML, CSS and javascript
 Back-end:
 Netlify Functions, simple Javascript file that acts as a back-end server
 
+APIs:
+* Language Detection API (https://detectlanguage.com)
+* OpenAI Whisper (for transcribing audio, https://platform.openai.com/docs/models/whisper-1)
+* OpenAI TTS (for TTS w/ Farsi, https://platform.openai.com/docs/models/tts-1)
+* Google TTS (for TTS w/ English and German, https://cloud.google.com/text-to-speech?hl=en)
+
 For any questions, please contact me at _MehdiNV@hotmail.com_.

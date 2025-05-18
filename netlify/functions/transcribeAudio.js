@@ -30,6 +30,8 @@ exports.handler = async function(event) {
 
     fs.unlinkSync(tempPath);
 
+    console.error('Transcription was processed correctly:', transcription);
+
     return {
       statusCode: 200,
       body: JSON.stringify({ text: transcription.text })
