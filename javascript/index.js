@@ -17,19 +17,6 @@ let currentRate = 'slow';
 let currentAudio = null;
 let wordMap = {};
 
-function waitForVoices() {
-  return new Promise((resolve) => {
-    const v = speechSynthesis.getVoices();
-    if (v.length > 0) {
-      resolve(v);
-    } else {
-      speechSynthesis.onvoiceschanged = () => {
-        resolve(speechSynthesis.getVoices());
-      };
-    }
-  });
-}
-
 function interruptAudioPlayback() {
   if (isSpeaking && currentAudio) {
     currentAudio.pause();
@@ -53,7 +40,6 @@ function clearText() {
   interruptAudioPlayback();
   textDisplay.innerText = '';
   textDisplay.focus();
-  announce('Text gelöscht');
 }
 
 function highlightTextByWords(text) {
@@ -108,27 +94,22 @@ async function toggleRecording() {
           const data = await response.json();
           if (data.text) {
             textDisplay.innerText = data.text;
-            announce('Transkription abgeschlossen');
+            console.log("Transcription was successful")
           } else {
-            announce('Fehler bei der Transkription');
+            console.log("There was a failure in accessing the transcription")
           }
         } catch (error) {
           console.error('API call failed:', error);
-          announce('Verbindung zur Spracherkennung fehlgeschlagen');
         }
-
-        announce(`Aufnahme gestoppt nach ${duration} Sekunden`);
       };
 
       mediaRecorder.start();
       recordingStartTime = Date.now();
       isRecording = true;
       micButton.classList.add('recording');
-      announce('Aufnahme gestartet');
 
     } catch (err) {
       console.error('Microphone access error:', err);
-      announce('Mikrofonzugriff verweigert');
     }
   } else {
     mediaRecorder.stop();
@@ -280,14 +261,12 @@ async function speakWithGoogleTTS(ssmlText, originalText) {
   }
 }
 
+// Event listeners for the UI --------------------------------------------------
 playButton.addEventListener('click', () => {
   const originalText = textDisplay.innerText.trim();
   const ssml = convertTextToSSML(originalText);
   speakWithGoogleTTS(ssml, originalText);
 });
-
-
-
 
 clearButton.addEventListener('click', () => {
   interruptAudioPlayback();
@@ -324,7 +303,7 @@ document.addEventListener('keydown', (e) => {
     textDisplay.focus();
   }
   if (!isTyping && e.shiftKey && e.key === '?') {
-    announce('Tastenkombinationen: R für Aufnahme, P für Wiedergabe, C für Löschen, Escape zum Leeren des Texts, Leertaste zum Abspielen');
+    // TODO announce('Tastenkombinationen: R für Aufnahme, P für Wiedergabe, C für Löschen, Escape zum Leeren des Texts, Leertaste zum Abspielen');
   }
 });
 
@@ -368,3 +347,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   textDisplay.focus();
 });
+// Event listeners for the UI --------------------------------------------------
