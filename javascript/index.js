@@ -332,12 +332,22 @@ async function toggleRecording() {
         formData.append('model', 'whisper-1');
 
         try {
-          const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+          function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) {
+              binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary);
+          }
+
+          const arrayBuffer = await blob.arrayBuffer();
+          const base64Audio = arrayBufferToBase64(arrayBuffer);
+
+          const response = await fetch('/.netlify/functions/transcribeAudio', {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer YOUR_OPENAI_API_KEY`
-            },
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audioBase64: base64Audio })
           });
 
           const data = await response.json();
