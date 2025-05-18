@@ -60,16 +60,13 @@ function highlightTextByWords(text) {
   });
 }
 
-// Handles languages that read from left-to-right, such as English or German
-// For Farsi / Persian, we'll need to refer to OpenAI's TTS model as the language...
-// ...isn't currently supported fully in Google's TTS
-async function speakWithGoogleTTS(textToVerbalise) {
+async function verbaliseTextViaTTS(textToVerbalise) {
   if (isCurrentlySpeaking) {
     interruptAudioPlayback();
     return;
   }
 
-  const languageCode = detectWhichLanguage(originalText);
+  const languageCode = detectWhichLanguage(textToVerbalise);
   const useSSML = languageCode !== 'fa-IR';
   const payload = {
     text: useSSML ? convertTextToSSML(textToVerbalise) : textToVerbalise,
@@ -81,6 +78,19 @@ async function speakWithGoogleTTS(textToVerbalise) {
   playButton.classList.add('playing');
   playButton.innerHTML = "⏸ Pause";
 
+  if (languageCode !== 'fa-IR') {
+    utiliseGoogleTTS(textToVerbalise)
+  }
+  else {
+    // TODO: Handle Persian verbalisation here
+    console.log("Error: Persian language isn't support yet")
+  }
+}
+
+// Handles languages that read from left-to-right, such as English or German
+// For Farsi / Persian, we'll need to refer to OpenAI's TTS model as the language...
+// ...isn't currently supported fully in Google's TTS
+async function utiliseGoogleTTS(textToVerbalise) {
   try {
     const response = await fetch('/.netlify/functions/googleTTS', {
       method: 'POST',
@@ -136,7 +146,7 @@ async function speakWithGoogleTTS(textToVerbalise) {
       isCurrentlySpeaking = false;
       currentAudio = null;
       playButton.classList.remove('playing');
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
       const spans = document.querySelectorAll('#textDisplay .word');
       spans.forEach(span => span.classList.remove('spoken', 'current'));
     };
@@ -151,7 +161,7 @@ async function speakWithGoogleTTS(textToVerbalise) {
     console.error('Google TTS error:', err);
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
-    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
   }
 }
 // -----------------------------------------------------------------------------
@@ -219,7 +229,7 @@ async function toggleRecording() {
 }
 // -----------------------------------------------------------------------------
 
-// Button-based functionality: Clear -------------------------------------------
+// Button-based functionality: Clear (aka Klar ) -------------------------------
 function clearText() {
   interruptAudioPlayback();
   textDisplay.innerText = '';
@@ -230,7 +240,7 @@ function clearText() {
 // Event listeners for the UI --------------------------------------------------
 playButton.addEventListener('click', () => {
   const originalText = textDisplay.innerText.trim();
-  speakWithGoogleTTS(textToVerbalise);
+  verbaliseTextViaTTS(textToVerbalise);
 });
 
 clearButton.addEventListener('click', () => {
@@ -246,14 +256,14 @@ document.addEventListener('keydown', (e) => {
   if (!isTyping && e.key === ' ') {
     e.preventDefault();
     const textToVerbalise = textDisplay.innerText.trim();
-    speakWithGoogleTTS(textToVerbalise);
+    verbaliseTextViaTTS(textToVerbalise);
   }
   if (!isTyping && e.key.toLowerCase() === 'r') {
     toggleRecording();
   }
   if (!isTyping && e.key.toLowerCase() === 'p') {
     const textToVerbalise = textDisplay.innerText.trim();
-    speakWithGoogleTTS(textToVerbalise);
+    verbaliseTextViaTTS(textToVerbalise);
   }
   if (!isTyping && e.key.toLowerCase() === 'c') {
     interruptAudioPlayback();
