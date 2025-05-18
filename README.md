@@ -9,3 +9,5 @@ Mixture of simple HTML, CSS and javascript
 
 Back-end:
 Netlify Functions, simple Javascript file that acts as a back-end server
+
+For any questions, please contact me at _MehdiNV@hotmail.com_.

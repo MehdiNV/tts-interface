@@ -136,7 +136,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
         const end = parseFloat(tp.end);
         return currentTime >= start && currentTime < end;
       });
-      
+
       console.log(`🎧 time=${currentTime.toFixed(2)}s → activeIndex=${activeIndex}`);
 
       if (activeIndex !== -1 && wordSpans[activeIndex]) {
