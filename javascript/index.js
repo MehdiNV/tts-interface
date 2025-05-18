@@ -16,11 +16,33 @@ let currentAudio = null;
 let wordMap = {};
 
 // TTS capability for English and German ---------------------------------------
-function detectWhichLanguage(text) {
-  // TODO: Refer to some other language-detection API perhaps in the future
-  if (/[؀-ۿ]/.test(text)) return 'fa-IR'; // If Farsi characters are contained...
-  if (/[À-ɏ]/.test(text) || /\b(und|ist|nicht|das|ein)\b/i.test(text)) return 'de-DE'; // If German common-words are detected
-  return 'en-US'; // Otherwise default to English
+async function detectWhichLanguage(text) {
+  try {
+    const res = await fetch('/.netlify/functions/detectLang', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+
+    const result = await res.json();
+    const detectedLangCode = result.data.detections[0]?.language;
+
+    console.warn('⚠️ Language is detected as...', detectedLangCode);
+
+    switch (detectedLangCode) {
+      case 'fa': return 'fa-IR';
+      case 'de': return 'de-DE';
+      default: return 'en-US';
+    }
+
+  } catch (error) {
+    console.warn('⚠️ Detect Language API failed, falling back to regex-based detection.', error);
+
+    // Fallback using your original regex logic
+    if (/[؀-ۿ]/.test(text)) return 'fa-IR'; // Farsi/Persian
+    if (/[À-ɏ]/.test(text) || /\b(und|ist|nicht|das|ein)\b/i.test(text)) return 'de-DE'; // German
+    return 'en-US'; // Default fallback
+  }
 }
 
 function convertTextToSSML(text) {
@@ -51,7 +73,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
     return;
   }
 
-  const languageCode = detectWhichLanguage(textToVerbalise);
+  const languageCode = await detectWhichLanguage(textToVerbalise);
 
   isCurrentlySpeaking = true;
   playButton.classList.add('playing');
@@ -90,7 +112,7 @@ function highlightTextByWordsRightToLeft(text) {
     span.className = 'word';
     span.dataset.index = index;
 
-    const clean = word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase();
+    const clean = word.replace(/[“”‘’"',.?!:؛،]/g, '').toLowerCase();
     wordMap[clean + '-' + index] = index;
 
     span.textContent = word + ' ';
