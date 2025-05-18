@@ -271,34 +271,6 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const shortcutInfo = document.createElement('div');
-  shortcutInfo.className = 'keyboard-shortcuts';
-  shortcutInfo.setAttribute('aria-hidden', 'true');
-
-  const heading = document.createElement('h2');
-  heading.textContent = 'Tastenkombinationen';
-
-  const list = document.createElement('ul');
-  [
-    ['R', 'Aufnahme starten/stoppen'],
-    ['P', 'Text vorlesen'],
-    ['C', 'Text löschen'],
-    ['Escape', 'Text löschen'],
-    ['Leertaste', 'Text abspielen/pause'],
-    ['Shift + ?', 'Tastenkombinationen vorlesen']
-  ].forEach(([key, label]) => {
-    const li = document.createElement('li');
-    const strong = document.createElement('strong');
-    strong.textContent = key;
-    li.appendChild(strong);
-    li.append(`: ${label}`);
-    list.appendChild(li);
-  });
-
-  shortcutInfo.appendChild(heading);
-  shortcutInfo.appendChild(list);
-  document.body.appendChild(shortcutInfo);
-
   textDisplay.focus();
 });
 // Event listeners for the UI --------------------------------------------------
