@@ -82,17 +82,16 @@ main {
 
 .text-input-container {
   width: 100%;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
   padding: 0 20px; /* Add horizontal padding to prevent touching window edge */
   box-sizing: border-box;
 }
 
 .controls {
   display: flex;
-  gap: 50px; /* More space between buttons */
+  gap: 120px; /* More space between buttons */
   flex-wrap: wrap;
   justify-content: center;
-
 }
 
 .controls button {

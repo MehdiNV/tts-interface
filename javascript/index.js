@@ -62,6 +62,7 @@ function interruptAudioPlayback() {
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+
     const spans = document.querySelectorAll('#textDisplay .word');
     spans.forEach(span => span.classList.remove('spoken', 'current'));
   }
@@ -187,8 +188,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       currentAudio = null;
       playButton.classList.remove('playing');
       playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
-      const spans = document.querySelectorAll('#textDisplay .word');
-      spans.forEach(span => span.classList.remove('spoken', 'current'));
+
     };
 
     audio.onplay = () => {
@@ -286,8 +286,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
       currentAudio = null;
       playButton.classList.remove('playing');
       playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
-      const spans = document.querySelectorAll('#textDisplay .word');
-      spans.forEach(span => span.classList.remove('spoken', 'current'));
+
     };
 
     audio.onplay = () => {
