@@ -432,4 +432,15 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('DOMContentLoaded', async () => {
   textDisplay.focus();
 });
+
+document.addEventListener("paste", function(e) {
+    // Cancel the paste
+    e.preventDefault();
+
+    // Fetch text representation of whatever's in the clipboard
+    var text = (e.originalEvent || e).clipboardData.getData('text/plain');
+
+    // Then insert text manually
+    document.execCommand("insertHTML", false, text);
+});
 // Event listeners for the UI --------------------------------------------------
