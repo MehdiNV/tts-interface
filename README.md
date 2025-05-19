@@ -10,6 +10,8 @@ Mixture of simple HTML, CSS and javascript
 **Back-end:**
 Netlify Functions, simple Javascript files that acts as a back-end server
 
+**Domain hosting:** Netlify, hosted on https://www.rasuleye.com
+
 APIs:
 * Language Detection API (https://detectlanguage.com)
 * OpenAI Whisper (for transcribing audio, https://platform.openai.com/docs/models/whisper-1)

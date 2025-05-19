@@ -70,7 +70,7 @@ exports.handler = async function (event) {
     };
 
   } catch (err) {
-    console.error('❌ Farsi TTS Error:', err.stack || err.message || err);
+    console.error('🔴 Farsi TTS Error:', err.stack || err.message || err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message || 'Farsi TTS failure' })
@@ -83,7 +83,7 @@ exports.handler = async function (event) {
         console.log('🧹 Temporary file deleted:', tempPath);
       }
     } catch (cleanupErr) {
-      console.warn('⚠️ Failed to clean up temp file:', cleanupErr.message);
+      console.error('🔴 Failed to clean up temp file:', cleanupErr.message);
     }
   }
 };

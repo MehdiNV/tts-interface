@@ -30,7 +30,7 @@ exports.handler = async function(event) {
 
     fs.unlinkSync(tempPath);
 
-    console.error('Transcription was processed correctly:', transcription);
+    console.log('📗 Transcription was processed correctly:', transcription);
 
     return {
       statusCode: 200,
@@ -38,7 +38,7 @@ exports.handler = async function(event) {
     };
 
   } catch (err) {
-    console.error('❌ Transcription Error:', err.stack || err);
+    console.error('🔴 Transcription Error:', err.stack || err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message || 'Transcription failed' })

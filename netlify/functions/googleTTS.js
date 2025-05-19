@@ -50,7 +50,7 @@ exports.handler = async function (event) {
     };
 
   } catch (err) {
-    console.error('❌ Google TTS Error:', err);
+    console.error('🔴 Google TTS Error:', err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message || 'TTS failure' })

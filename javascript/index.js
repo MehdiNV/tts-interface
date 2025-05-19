@@ -23,6 +23,7 @@ let wordMap = {};
 // TTS capability for English and German ---------------------------------------
 async function detectWhichLanguage(text) {
   try {
+    console.log("🟨 Attempting to determine language...")
     const res = await fetch('/.netlify/functions/detectLang', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -32,7 +33,7 @@ async function detectWhichLanguage(text) {
     const result = await res.json();
     const detectedLangCode = result.data.detections[0]?.language;
 
-    console.warn('⚠️ Language is detected as...', detectedLangCode);
+    console.log('🌐 Language is detected as...', detectedLangCode);
 
     switch (detectedLangCode) {
       case 'fa': return 'fa-IR';
@@ -40,13 +41,14 @@ async function detectWhichLanguage(text) {
       default: return 'en-US';
     }
 
-  } catch (error) {
-    console.warn('⚠️ Detect Language API failed, falling back to regex-based detection.', error);
+  } catch (err) {
+    console.error("🔴 Failed to liase with Detect Language API, error: ", error)
+    console.warn('🔍 Detect Language API failed, falling back to regex-based detection');
 
     // Fallback using your original regex logic
     if (/[؀-ۿ]/.test(text)) return 'fa-IR'; // Farsi/Persian
     if (/[À-ɏ]/.test(text) || /\b(und|ist|nicht|das|ein)\b/i.test(text)) return 'de-DE'; // German
-    return 'en-US'; // Default fallback
+    return 'en-US'; // Default fallback - English
   }
 }
 
@@ -79,11 +81,12 @@ async function verbaliseTextViaTTS(textToVerbalise) {
     return;
   }
 
-  const languageCode = await detectWhichLanguage(textToVerbalise);
+  try {
+    isCurrentlySpeaking = true;
+    playButton.classList.add('playing');
+    playButton.innerHTML = "⏸ Pause";
 
-  isCurrentlySpeaking = true;
-  playButton.classList.add('playing');
-  playButton.innerHTML = "⏸ Pause";
+    const languageCode = await detectWhichLanguage(textToVerbalise);
 
   if (languageCode !== 'fa-IR') {
     const payload = {
@@ -103,6 +106,16 @@ async function verbaliseTextViaTTS(textToVerbalise) {
 
     utiliseOpenAiTTS(textToVerbalise, payload)
   }
+  }
+  catch (err) {
+    console.error("🔴 Failed to execute TTS: ", error);
+
+    isCurrentlySpeaking = false;
+    currentAudio = null;
+    playButton.classList.remove('playing');
+    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+  }
+
 }
 
 function highlightTextByWordsRightToLeft(text) {
@@ -133,11 +146,8 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     let timepoints;
 
     // Check if we have cached this audio already - if so, just re-play this one
-    if (
-      textToVerbalise === lastCachedText &&
-      lastCachedAudioBlob
-    ) {
-      console.log('Re-playing cached copy...');
+    if (isAudioAlreadyCached(textToVerbalise)) {
+      console.log('📚 Re-playing cached copy...');
       audioBlob = lastCachedAudioBlob;
       timepoints = lastCachedTimepoints;
     }
@@ -150,7 +160,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
 
       const result = await response.json();
       if (!response.ok || !result.audioContent) {
-        console.error('OpenAI TTS error response:', result);
+        console.error('🔴 OpenAI TTS error response:', result);
         throw new Error(result.error || 'Invalid audio response from OpenAI TTS');
       }
 
@@ -220,7 +230,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     audio.play();
   }
   catch (err) {
-    console.error('Google TTS error:', err);
+    console.error('🔴 Google TTS error:', err);
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
@@ -248,6 +258,10 @@ function highlightTextByWordsLeftToRight(text) {
   });
 }
 
+function isAudioAlreadyCached(textToVerbalise) {
+  return true ? (textToVerbalise === lastCachedText && lastCachedAudioBlob) : false;
+}
+
 // Handles languages that read from left-to-right, such as English or German
 // For Farsi / Persian, we'll need to refer to OpenAI's TTS model as the language...
 // ...isn't currently supported fully in Google's TTS
@@ -257,11 +271,8 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     let timepoints;
 
     // Check if we have cached this audio already - if so, just re-play this one
-    if (
-      textToVerbalise === lastCachedText &&
-      lastCachedAudioBlob
-    ) {
-      console.log('Re-playing cached copy...');
+    if (isAudioAlreadyCached(textToVerbalise)) {
+      console.log('📚 Re-playing cached copy...');
       audioBlob = lastCachedAudioBlob;
       timepoints = lastCachedTimepoints;
     }
@@ -274,7 +285,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
 
       const result = await response.json();
       if (!response.ok || !result.audioContent) {
-        console.error('Google TTS error response:', result);
+        console.error('🔴 Google TTS error response:', result);
         throw new Error(result.error || 'Invalid audio response from Google TTS');
       }
 
@@ -336,7 +347,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     lastCachedTimepoints = timepoints;
 
   } catch (err) {
-    console.error('Google TTS error:', err);
+    console.error('🔴 Google TTS error:', err);
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
@@ -392,12 +403,12 @@ async function toggleRecording() {
           const data = await response.json();
           if (data.text) {
             textDisplay.innerText = data.text;
-            console.log("Transcription was successful")
+            console.log("📗 Transcription was successful")
           } else {
-            console.log("There was a failure in accessing the transcription")
+            console.error("🔴 There was a failure in accessing the transcription")
           }
-        } catch (error) {
-          console.error('API call failed:', error);
+        } catch (err) {
+          console.error('🔴 API call failed:', error);
         }
       };
 
@@ -407,7 +418,7 @@ async function toggleRecording() {
       micButton.classList.add('recording');
 
     } catch (err) {
-      console.error('Microphone access error:', err);
+      console.error('🔴 Microphone access error:', err);
     }
   } else {
     mediaRecorder.stop();
