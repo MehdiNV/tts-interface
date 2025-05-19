@@ -1,6 +1,7 @@
 // netlify/functions/openaiFarsiTTS.js
 
-const fs = require('fs');
+const fs = require('fs').promises;
+const fssync = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const os = require('os');
@@ -11,22 +12,27 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 exports.handler = async function (event) {
   console.log('📥 Incoming request:', event.body);
 
+  const { text, languageCode } = JSON.parse(event.body || '{}');
+  if (!text || languageCode !== 'fa-IR') {
+    console.warn('⚠️ Invalid input:', { text, languageCode });
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Invalid request for Farsi TTS' })
+    };
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Missing OpenAI API Key' })
+    };
+  }
+
+  const tempPath = path.join(os.tmpdir(), `${uuidv4()}.mp3`);
+  let audioBuffer;
+
   try {
-    const { text, languageCode = 'fa-IR' } = JSON.parse(event.body);
-
-    if (!text || languageCode !== 'fa-IR') {
-      console.warn('⚠️ Invalid input:', { text, languageCode });
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Invalid request for Farsi TTS' })
-      };
-    }
-
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('Missing OpenAI API Key');
-    }
-
-    // Step 1: Text-to-Speech
+    // Step 1: Generate speech
     console.log('🗣️ Generating speech for text...');
     const speechResponse = await openai.audio.speech.create({
       model: 'tts-1',
@@ -36,18 +42,17 @@ exports.handler = async function (event) {
       language: 'fa'
     });
 
-    console.log('✅ Speech generated successfully. Reading audio buffer...');
-    const audioBuffer = Buffer.from(await speechResponse.arrayBuffer());
-    console.log('🧊 Buffer size:', audioBuffer.length);
+    audioBuffer = Buffer.from(await speechResponse.arrayBuffer());
+    console.log('✅ Speech generated. Buffer size:', audioBuffer.length);
 
-    const tempPath = path.join(os.tmpdir(), `${uuidv4()}.mp3`);
-    fs.writeFileSync(tempPath, audioBuffer);
+    // Save to temp file for transcription
+    await fs.writeFile(tempPath, audioBuffer);
     console.log('💾 Audio file saved at:', tempPath);
 
-    // Step 2: Transcription
+    // Step 2: Transcribe speech
     console.log('📝 Transcribing audio with word-level timestamps...');
     const transcription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(tempPath),
+      file: fssync.createReadStream(tempPath),
       model: 'whisper-1',
       response_format: 'verbose_json',
       timestamp_granularities: ['word'],
@@ -55,12 +60,6 @@ exports.handler = async function (event) {
     });
 
     console.log('✅ Transcription successful');
-    console.dir(transcription, { depth: null });
-
-    // Cleanup
-    fs.unlinkSync(tempPath);
-    console.log('🧹 Temporary file deleted');
-
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -76,5 +75,15 @@ exports.handler = async function (event) {
       statusCode: 500,
       body: JSON.stringify({ error: err.message || 'Farsi TTS failure' })
     };
+  } finally {
+    // Always attempt cleanup
+    try {
+      if (await fssync.promises.stat(tempPath)) {
+        await fs.unlink(tempPath);
+        console.log('🧹 Temporary file deleted:', tempPath);
+      }
+    } catch (cleanupErr) {
+      console.warn('⚠️ Failed to clean up temp file:', cleanupErr.message);
+    }
   }
 };
