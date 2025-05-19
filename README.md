@@ -4,11 +4,11 @@ writing easier for his eyes. This program is applicable for anyone who is visual
 impaired, feel free to fork this repository or to make use of it as you wish -
 as long as it helps people, I'm happy.
 
-Front-end:
+**Front-end:**
 Mixture of simple HTML, CSS and javascript
 
-Back-end:
-Netlify Functions, simple Javascript file that acts as a back-end server
+**Back-end:**
+Netlify Functions, simple Javascript files that acts as a back-end server
 
 APIs:
 * Language Detection API (https://detectlanguage.com)
