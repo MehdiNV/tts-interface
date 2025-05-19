@@ -1,3 +1,8 @@
+let lastCachedText = '';
+let lastCachedLanguageCode = '';
+let lastCachedAudioBlob = null;
+let lastCachedTimepoints = [];
+
 const textDisplay = document.getElementById('textDisplay');
 const playButton = document.getElementById('playButton');
 const micButton = document.getElementById('micButton');
@@ -124,23 +129,35 @@ function highlightTextByWordsRightToLeft(text) {
 // Handles languages that read from right-to-left, in paticular Farsi / Persian
 async function utiliseOpenAiTTS(textToVerbalise, payload) {
   try {
-    const response = await fetch('/.netlify/functions/openaiFarsiTTS', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    let audioBlob;
+    let timepoints;
 
-    const result = await response.json();
-    if (!response.ok || !result.audioContent) {
-      console.error('OpenAI TTS error response:', result);
-      throw new Error(result.error || 'Invalid audio response from OpenAI TTS');
+    // Check if we have cached this audio already - if so, just re-play this one
+    if (
+      textToVerbalise === lastCachedText &&
+      lastCachedAudioBlob
+    ) {
+      console.log('Re-playing cached copy...');
+      audioBlob = lastCachedAudioBlob;
+      timepoints = lastCachedTimepoints;
+    }
+    else { // Otherwise fetch a new one
+      const response = await fetch('/.netlify/functions/openaiFarsiTTS', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.audioContent) {
+        console.error('OpenAI TTS error response:', result);
+        throw new Error(result.error || 'Invalid audio response from OpenAI TTS');
+      }
+
+      timepoints = result.timepoints || [];
+      audioBlob = new Blob([Uint8Array.from(atob(result.audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
     }
 
-    const audioContent = result.audioContent;
-    const timepoints = result.timepoints || [];
-
-    const audioBlob = new Blob([Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
-    const audioUrl = URL.createObjectURL(audioBlob);
     const audio = new Audio(audioUrl);
     currentAudio = audio;
 
@@ -195,6 +212,11 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       if (timepoints.length > 0) requestAnimationFrame(trackAudioProgress);
     };
 
+    lastCachedText = textToVerbalise;
+    lastCachedLanguageCode = payload.languageCode;
+    lastCachedAudioBlob = audioBlob;
+    lastCachedTimepoints = timepoints;
+
     audio.play();
   }
   catch (err) {
@@ -231,22 +253,35 @@ function highlightTextByWordsLeftToRight(text) {
 // ...isn't currently supported fully in Google's TTS
 async function utiliseGoogleTTS(textToVerbalise, payload) {
   try {
-    const response = await fetch('/.netlify/functions/googleTTS', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    let audioBlob;
+    let timepoints;
 
-    const result = await response.json();
-    if (!response.ok || !result.audioContent) {
-      console.error('Google TTS error response:', result);
-      throw new Error(result.error || 'Invalid audio response from Google TTS');
+    // Check if we have cached this audio already - if so, just re-play this one
+    if (
+      textToVerbalise === lastCachedText &&
+      lastCachedAudioBlob
+    ) {
+      console.log('Re-playing cached copy...');
+      audioBlob = lastCachedAudioBlob;
+      timepoints = lastCachedTimepoints;
+    }
+    else { // Otherwise fetch a new one
+      const response = await fetch('/.netlify/functions/googleTTS', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.audioContent) {
+        console.error('Google TTS error response:', result);
+        throw new Error(result.error || 'Invalid audio response from Google TTS');
+      }
+
+      timepoints = result.timepoints || [];
+      audioBlob = new Blob([Uint8Array.from(atob(result.audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
     }
 
-    const audioContent = result.audioContent;
-    const timepoints = result.timepoints || [];
-
-    const audioBlob = new Blob([Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
     const audioUrl = URL.createObjectURL(audioBlob);
     const audio = new Audio(audioUrl);
     currentAudio = audio;
@@ -294,6 +329,11 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     };
 
     audio.play();
+
+    lastCachedText = textToVerbalise;
+    lastCachedLanguageCode = payload.languageCode;
+    lastCachedAudioBlob = audioBlob;
+    lastCachedTimepoints = timepoints;
 
   } catch (err) {
     console.error('Google TTS error:', err);
