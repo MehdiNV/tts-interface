@@ -183,8 +183,10 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
 
       // Find the currently spoken word based on timestamp
       const activeIndex = timepoints.findIndex(tp => {
-        const start = parseFloat(tp.start);
-        const end = parseFloat(tp.end);
+        const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.8 : 0.5;
+
+        const start = parseFloat(tp.start) / playbackSpeedEqualiser;
+        const end = parseFloat(tp.end) / playbackSpeedEqualiser;
         return currentTime >= start && currentTime < end;
       });
 
@@ -223,11 +225,6 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       if (timepoints.length > 0) requestAnimationFrame(trackAudioProgress);
     };
 
-    lastCachedText = textToVerbalise;
-    lastCachedLanguageCode = payload.languageCode;
-    lastCachedAudioBlob = audioBlob;
-    lastCachedTimepoints = timepoints;
-
     if (repeatSlowerNextTime) {
       audio.playbackRate = 0.5;
       repeatSlowerNextTime = false;
@@ -236,6 +233,11 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       audio.playbackRate = 0.8;
       repeatSlowerNextTime = true;
     }
+
+    lastCachedText = textToVerbalise;
+    lastCachedLanguageCode = payload.languageCode;
+    lastCachedAudioBlob = audioBlob;
+    lastCachedTimepoints = timepoints;
 
     audio.play();
   }
@@ -316,8 +318,10 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
       const currentTime = audio.currentTime;
 
       for (let i = 0; i < timepoints.length; i++) {
-        const start = parseFloat(timepoints[i].timeSeconds);
-        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds) : Infinity;
+        const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.8 : 0.5;
+
+        const start = parseFloat(timepoints[i].timeSeconds) / playbackSpeedEqualiser;
+        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds) / playbackSpeedEqualiser : Infinity;
 
         if (currentTime >= start && currentTime < nextStart) {
           const currentMark = timepoints[i].markName.toLowerCase();
@@ -349,12 +353,21 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
       if (timepoints.length > 0) requestAnimationFrame(trackAudioProgress);
     };
 
-    audio.play();
+    if (repeatSlowerNextTime) {
+      audio.playbackRate = 0.5;
+      repeatSlowerNextTime = false;
+    }
+    else {
+      audio.playbackRate = 0.8;
+      repeatSlowerNextTime = true;
+    }
 
     lastCachedText = textToVerbalise;
     lastCachedLanguageCode = payload.languageCode;
     lastCachedAudioBlob = audioBlob;
     lastCachedTimepoints = timepoints;
+
+    audio.play();
 
   } catch (err) {
     console.error('🔴 Google TTS error:', err);
