@@ -1,7 +1,18 @@
 const textToSpeech = require('@google-cloud/text-to-speech').v1beta1;
 const path = require('path');
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS = path.join(__dirname, '../../gcloud-service-key.json');
+const fs = require('fs');
+const os = require('os');
+
+// Write service key from base64 env var
+const keyPath = path.join(os.tmpdir(), 'gcloud-service-key.json');
+
+if (!fs.existsSync(keyPath)) {
+  const decoded = Buffer.from(process.env.GCLOUD_KEY_BASE64, 'base64').toString('utf8');
+  fs.writeFileSync(keyPath, decoded);
+}
+
+process.env.GOOGLE_APPLICATION_CREDENTIALS = keyPath;
 
 const client = new textToSpeech.TextToSpeechClient();
 
