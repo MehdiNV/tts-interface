@@ -109,7 +109,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
   }
   }
   catch (err) {
-    console.error("🔴 Failed to execute TTS: ", error);
+    console.error("🔴 Failed to execute TTS: ", err);
 
     isCurrentlySpeaking = false;
     currentAudio = null;
