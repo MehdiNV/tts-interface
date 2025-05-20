@@ -185,8 +185,8 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       const activeIndex = timepoints.findIndex(tp => {
         const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.8 : 0.5;
 
-        const start = parseFloat(tp.start) / playbackSpeedEqualiser;
-        const end = parseFloat(tp.end) / playbackSpeedEqualiser;
+        const start = parseFloat(tp.start) * playbackSpeedEqualiser;
+        const end = parseFloat(tp.end) * playbackSpeedEqualiser;
         return currentTime >= start && currentTime < end;
       });
 
@@ -219,6 +219,12 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       playButton.classList.remove('playing');
       playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
 
+      if (repeatSlowerNextTime) {
+        repeatSlowerNextTime = false;
+      }
+      else {
+        repeatSlowerNextTime = true;
+      }
     };
 
     audio.onplay = () => {
@@ -227,11 +233,9 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
 
     if (repeatSlowerNextTime) {
       audio.playbackRate = 0.5;
-      repeatSlowerNextTime = false;
     }
     else {
       audio.playbackRate = 0.8;
-      repeatSlowerNextTime = true;
     }
 
     lastCachedText = textToVerbalise;
@@ -320,8 +324,8 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
       for (let i = 0; i < timepoints.length; i++) {
         const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.8 : 0.5;
 
-        const start = parseFloat(timepoints[i].timeSeconds) / playbackSpeedEqualiser;
-        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds) / playbackSpeedEqualiser : Infinity;
+        const start = parseFloat(timepoints[i].timeSeconds) * playbackSpeedEqualiser;
+        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds) * playbackSpeedEqualiser : Infinity;
 
         if (currentTime >= start && currentTime < nextStart) {
           const currentMark = timepoints[i].markName.toLowerCase();
@@ -347,6 +351,12 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
       playButton.classList.remove('playing');
       playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
 
+      if (repeatSlowerNextTime) {
+        repeatSlowerNextTime = false;
+      }
+      else {
+        repeatSlowerNextTime = true;
+      }
     };
 
     audio.onplay = () => {
@@ -355,11 +365,9 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
 
     if (repeatSlowerNextTime) {
       audio.playbackRate = 0.5;
-      repeatSlowerNextTime = false;
     }
     else {
       audio.playbackRate = 0.8;
-      repeatSlowerNextTime = true;
     }
 
     lastCachedText = textToVerbalise;
