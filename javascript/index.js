@@ -19,6 +19,7 @@ let destination;
 let recordingStartTime = null;
 let currentAudio = null;
 let wordMap = {};
+let repeatSlowerNextTime = false;
 
 // TTS capability for English and German ---------------------------------------
 async function detectWhichLanguage(text) {
@@ -227,6 +228,15 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     lastCachedAudioBlob = audioBlob;
     lastCachedTimepoints = timepoints;
 
+    if (repeatSlowerNextTime) {
+      audio.playbackRate = 0.5;
+      repeatSlowerNextTime = false;
+    }
+    else {
+      audio.playbackRate = 0.8;
+      repeatSlowerNextTime = true;
+    }
+
     audio.play();
   }
   catch (err) {
@@ -431,6 +441,7 @@ async function toggleRecording() {
 // Button-based functionality: Clear (aka Klar ) -------------------------------
 function clearText() {
   interruptAudioPlayback();
+  repeatSlowerNextTime = false;
   textDisplay.innerText = '';
   textDisplay.focus();
 }
