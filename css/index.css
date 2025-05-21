@@ -117,6 +117,8 @@ main {
 
 .keyboardShortcuts {
   margin-top: 20px;
+  align-items: center;
+  justify-content: center;
 }
 
 #micButton {
@@ -126,7 +128,6 @@ main {
   border-radius: 50%;
   width: 120px;
   height: 120px;
-  justify-content: center;
   align-items: center;
   justify-content: center;
 
@@ -181,14 +182,13 @@ main {
     gap: 20px;
   }
 
-  micButton {
-    margin-bottom: 20px;
-  }
-
   .controls button {
-    width: 90%;
     font-size: 1.8em; /* Slightly reduce size for smaller screens */
     padding: 20px 30px;
+  }
+
+  .keyboardShortcuts h2 {
+    text-align: center;
   }
 
   .text-input-container {

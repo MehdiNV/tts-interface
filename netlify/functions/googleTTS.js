@@ -4,6 +4,11 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+const rateLimitStore = {};
+const RATE_LIMIT = 10; // max requests
+const WINDOW_MS = 60 * 1000; // 1 minute
+
+
 // Always decode from GCLOUD_KEY_BASE64
 const keyPath = path.join(os.tmpdir(), 'gcloud-service-key.json');
 if (!fs.existsSync(keyPath)) {
@@ -20,6 +25,26 @@ process.env.GOOGLE_APPLICATION_CREDENTIALS = keyPath;
 const client = new textToSpeech.TextToSpeechClient();
 
 exports.handler = async function (event) {
+  const clientIp = event.headers['x-forwarded-for'] || 'unknown';
+  const now = Date.now();
+  if (!rateLimitStore[clientIp]) {
+    rateLimitStore[clientIp] = [];
+  }
+
+  // Clear out old timestamps
+  rateLimitStore[clientIp] = rateLimitStore[clientIp].filter(ts => now - ts < WINDOW_MS);
+
+  if (rateLimitStore[clientIp].length >= RATE_LIMIT) {
+    console.warn(`🚫 Rate limit exceeded for IP: ${clientIp}`);
+    return {
+      statusCode: 429,
+      body: JSON.stringify({ error: 'Too many requests. Please slow down.' })
+    };
+  }
+
+  // Add current request timestamp
+  rateLimitStore[clientIp].push(now);
+
   try {
     const {
       text,

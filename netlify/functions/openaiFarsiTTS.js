@@ -7,9 +7,33 @@ const { v4: uuidv4 } = require('uuid');
 const os = require('os');
 const OpenAI = require('openai');
 
+const rateLimitStore = {};
+const RATE_LIMIT = 10; // max requests
+const WINDOW_MS = 60 * 1000; // 1 minute
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 exports.handler = async function (event) {
+  const clientIp = event.headers['x-forwarded-for'] || 'unknown';
+  const now = Date.now();
+  if (!rateLimitStore[clientIp]) {
+    rateLimitStore[clientIp] = [];
+  }
+
+  // Clear out old timestamps
+  rateLimitStore[clientIp] = rateLimitStore[clientIp].filter(ts => now - ts < WINDOW_MS);
+
+  if (rateLimitStore[clientIp].length >= RATE_LIMIT) {
+    console.warn(`🚫 Rate limit exceeded for IP: ${clientIp}`);
+    return {
+      statusCode: 429,
+      body: JSON.stringify({ error: 'Too many requests. Please slow down.' })
+    };
+  }
+
+  // Add current request timestamp
+  rateLimitStore[clientIp].push(now);
+
   console.log('📥 Incoming request:', event.body);
 
   const { text, languageCode } = JSON.parse(event.body || '{}');
