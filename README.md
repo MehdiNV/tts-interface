@@ -12,6 +12,8 @@ Netlify Functions, simple Javascript files that acts as a back-end server
 
 **Domain hosting:** Netlify, hosted on https://www.rasuleye.com
 
+**Rate-limiting:** Upstash (Simple Redis DB / light-weight back-end) - https://upstash.com/
+
 APIs:
 * Language Detection API (https://detectlanguage.com)
 * OpenAI Whisper (for transcribing audio, https://platform.openai.com/docs/models/whisper-1)
