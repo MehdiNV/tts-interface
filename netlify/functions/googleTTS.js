@@ -1,13 +1,16 @@
 const textToSpeech = require('@google-cloud/text-to-speech').v1beta1;
-const path = require('path');
 
 const fs = require('fs');
 const os = require('os');
+const path = require('path');
 
-// Write service key from base64 env var
+// Always decode from GCLOUD_KEY_BASE64
 const keyPath = path.join(os.tmpdir(), 'gcloud-service-key.json');
-
 if (!fs.existsSync(keyPath)) {
+  if (!process.env.GCLOUD_KEY_BASE64) {
+    throw new Error('GCLOUD_KEY_BASE64 is not set');
+  }
+
   const decoded = Buffer.from(process.env.GCLOUD_KEY_BASE64, 'base64').toString('utf8');
   fs.writeFileSync(keyPath, decoded);
 }

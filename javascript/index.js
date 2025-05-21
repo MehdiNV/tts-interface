@@ -232,9 +232,11 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     };
 
     if (repeatSlowerNextTime) {
+      console.log("Audio is set to play at 0.5 speed...");
       audio.playbackRate = 0.5;
     }
     else {
+      console.log("Audio is set to play at 0.8 speed...");
       audio.playbackRate = 0.8;
     }
 
@@ -364,9 +366,11 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     };
 
     if (repeatSlowerNextTime) {
+      console.log("Audio is set to play at 0.5 speed...");
       audio.playbackRate = 0.5;
     }
     else {
+      console.log("Audio is set to play at 0.8 speed...");
       audio.playbackRate = 0.8;
     }
 
