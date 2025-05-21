@@ -1,28 +1,31 @@
 // netlify/functions/detectLang.js
-const rateLimitStore = {};
-const RATE_LIMIT = 10; // max requests
-const WINDOW_MS = 60 * 1000; // 1 minute
+const { Redis } = require('@upstash/redis');
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
+const RATE_LIMIT = 5; // max requests
+const WINDOW_SECONDS = 60; // 1 minute
 
 exports.handler = async function(event) {
   const clientIp = event.headers['x-forwarded-for'] || 'unknown';
-  const now = Date.now();
-  if (!rateLimitStore[clientIp]) {
-    rateLimitStore[clientIp] = [];
+  const key = `rate:${clientIp}`;
+
+  const count = await redis.incr(key);
+  if (count === 1) {
+    await redis.expire(key, WINDOW_SECONDS); // expire in 60s
   }
 
-  // Clear out old timestamps
-  rateLimitStore[clientIp] = rateLimitStore[clientIp].filter(ts => now - ts < WINDOW_MS);
-
-  if (rateLimitStore[clientIp].length >= RATE_LIMIT) {
+  if (count > RATE_LIMIT) {
     console.warn(`🚫 Rate limit exceeded for IP: ${clientIp}`);
+
     return {
       statusCode: 429,
       body: JSON.stringify({ error: 'Too many requests. Please slow down.' })
     };
   }
-
-  // Add current request timestamp
-  rateLimitStore[clientIp].push(now);
 
   const { text } = JSON.parse(event.body);
   const response = await fetch('https://ws.detectlanguage.com/0.2/detect', {
