@@ -10,6 +10,7 @@ body {
   flex-direction: column;
   min-height: 100vh;
   align-items: center;
+  justify-content: center;
 }
 
 main {
@@ -104,7 +105,14 @@ main {
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
+  justify-content: center; /* Centers the text horizontally */
+  text-align: center;
   gap: 10px;
+}
+
+.controls button span,
+.controls button {
+  line-height: 1;
 }
 
 .keyboardShortcuts {
@@ -112,12 +120,17 @@ main {
 }
 
 #micButton {
+  display: flex;
   background-color: #00BFFF; /* Bright blue */
   color: black;
   border-radius: 50%;
   width: 120px;
   height: 120px;
   justify-content: center;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto; /* ← This centers it in the flex column */
 }
 
 #micButton.recording {
@@ -168,7 +181,17 @@ main {
     gap: 20px;
   }
 
+  micButton {
+    margin-bottom: 20px;
+  }
+
   .controls button {
     width: 90%;
+    font-size: 1.8em; /* Slightly reduce size for smaller screens */
+    padding: 20px 30px;
+  }
+
+  .text-input-container {
+    padding: 0 10px;
   }
 }
