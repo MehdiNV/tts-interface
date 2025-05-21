@@ -78,6 +78,15 @@ function interruptAudioPlayback() {
 
 async function verbaliseTextViaTTS(textToVerbalise) {
   if (isCurrentlySpeaking) {
+    // Attempted to pause, treat as a audio.onended
+    
+    if (repeatSlowerNextTime) {
+      repeatSlowerNextTime = false;
+    }
+    else {
+      repeatSlowerNextTime = true;
+    }
+
     interruptAudioPlayback();
     return;
   }
@@ -150,7 +159,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     if (isAudioAlreadyCached(textToVerbalise)) {
       console.log('📚 Re-playing cached copy...');
       audioBlob = lastCachedAudioBlob;
-      timepoints = lastCachedTimepoints;
+      timepoints = convertTimestampsBetweenSpeeds(lastCachedTimepoints);
     }
     else { // Otherwise fetch a new one
       const response = await fetch('/.netlify/functions/openaiFarsiTTS', {
@@ -165,7 +174,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
         throw new Error(result.error || 'Invalid audio response from OpenAI TTS');
       }
 
-      timepoints = result.timepoints || [];
+      timepoints = adjustInitialTimepointsToPlaybackSpeed(result.timepoints, true);
       audioBlob = new Blob([Uint8Array.from(atob(result.audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
     }
 
@@ -179,14 +188,13 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     function trackAudioProgress() {
       if (!audio || audio.paused || audio.ended) return;
 
-      const currentTime = audio.currentTime;
+      const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.5 : 0.8;
+      const currentTime = (audio.currentTime / playbackSpeedEqualiser);
 
       // Find the currently spoken word based on timestamp
       const activeIndex = timepoints.findIndex(tp => {
-        const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.8 : 0.5;
-
-        const start = parseFloat(tp.start) * playbackSpeedEqualiser;
-        const end = parseFloat(tp.end) * playbackSpeedEqualiser;
+        const start = parseFloat(tp.start);
+        const end = parseFloat(tp.end);
         return currentTime >= start && currentTime < end;
       });
 
@@ -280,6 +288,62 @@ function isAudioAlreadyCached(textToVerbalise) {
   return true ? (textToVerbalise === lastCachedText && lastCachedAudioBlob) : false;
 }
 
+function adjustInitialTimepointsToPlaybackSpeed(timepoints, isLeftToRightAudio) {
+  if (timepoints == undefined || timepoints.length == 0) {
+    return [];
+  }
+
+  const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.5 : 0.8;
+
+  if (isLeftToRightAudio) {
+    return timepoints.map(timepointElement => {
+      return {
+        timeSeconds: (timepointElement.timeSeconds / playbackSpeedEqualiser),
+        markName: timepointElement.markName
+      }
+    });
+  }
+  else {
+    return timepoints.map(timepointElement => {
+      return {
+        start: (parseFloat(timepointElement.start) / playbackSpeedEqualiser),
+        end: (parseFloat(timepointElement.end) / playbackSpeedEqualiser)
+      }
+    });
+  }
+}
+
+function convertTimestampsBetweenSpeeds(timestamps) {
+  let fromSpeed;
+  let toSpeed;
+
+  if (repeatSlowerNextTime) {
+    fromSpeed = 0.8;
+    toSpeed = 0.5;
+  }
+  else {
+    fromSpeed = 0.5;
+    toSpeed = 0.8;
+  }
+
+  const factor = fromSpeed / toSpeed;
+
+  return timestamps.map(ts => {
+    if (typeof ts === 'number') {
+      return ts * factor;
+    }
+
+    const adjusted = { ...ts };
+
+    if ('start' in ts) adjusted.start = parseFloat(ts.start) * factor;
+    if ('end' in ts) adjusted.end = parseFloat(ts.end) * factor;
+    if ('timeSeconds' in ts) adjusted.timeSeconds = ts.timeSeconds * factor;
+
+    return adjusted;
+  });
+}
+
+
 // Handles languages that read from left-to-right, such as English or German
 // For Farsi / Persian, we'll need to refer to OpenAI's TTS model as the language...
 // ...isn't currently supported fully in Google's TTS
@@ -292,7 +356,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     if (isAudioAlreadyCached(textToVerbalise)) {
       console.log('📚 Re-playing cached copy...');
       audioBlob = lastCachedAudioBlob;
-      timepoints = lastCachedTimepoints;
+      timepoints = convertTimestampsBetweenSpeeds(lastCachedTimepoints);
     }
     else { // Otherwise fetch a new one
       const response = await fetch('/.netlify/functions/googleTTS', {
@@ -307,7 +371,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
         throw new Error(result.error || 'Invalid audio response from Google TTS');
       }
 
-      timepoints = result.timepoints || [];
+      timepoints = adjustInitialTimepointsToPlaybackSpeed(result.timepoints, true);
       audioBlob = new Blob([Uint8Array.from(atob(result.audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
     }
 
@@ -321,13 +385,14 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
 
     function trackAudioProgress() {
       if (!audio || audio.paused || audio.ended) return;
-      const currentTime = audio.currentTime;
+
+      const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.5 : 0.8;
+      const currentTime = audio.currentTime / playbackSpeedEqualiser;
 
       for (let i = 0; i < timepoints.length; i++) {
-        const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.8 : 0.5;
 
-        const start = parseFloat(timepoints[i].timeSeconds) * playbackSpeedEqualiser;
-        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds) * playbackSpeedEqualiser : Infinity;
+        const start = parseFloat(timepoints[i].timeSeconds);
+        const nextStart = timepoints[i + 1] ? parseFloat(timepoints[i + 1].timeSeconds): Infinity;
 
         if (currentTime >= start && currentTime < nextStart) {
           const currentMark = timepoints[i].markName.toLowerCase();
