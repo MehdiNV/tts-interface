@@ -20,4 +20,6 @@ APIs:
 * OpenAI TTS (for TTS w/ Farsi, https://platform.openai.com/docs/models/tts-1)
 * Google TTS (for TTS w/ English and German, https://cloud.google.com/text-to-speech?hl=en)
 
+Code of Conduct: Please see the [Code of Conduct](CodeOfConduct.md)
+
 For any questions, please contact me at _MehdiNV@hotmail.com_.
