@@ -30,6 +30,7 @@ process.env.GOOGLE_APPLICATION_CREDENTIALS = keyPath;
 const client = new textToSpeech.TextToSpeechClient();
 
 exports.handler = async function (event) {
+  // Rate limiting mechanism ---------------------------------------------------
   const clientIp = event.headers['x-forwarded-for'] || 'unknown';
   const key = `rate:${clientIp}`;
 
@@ -46,6 +47,7 @@ exports.handler = async function (event) {
       body: JSON.stringify({ error: 'Too many requests. Please slow down.' })
     };
   }
+  // Rate limiting mechanism ---------------------------------------------------
 
   try {
     const {

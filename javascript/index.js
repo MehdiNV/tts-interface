@@ -580,11 +580,33 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+function blobToBase64(blob) {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function shouldShowCameraButton() {
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isSmallScreen = window.innerWidth < 768;
+  return isTouchDevice && isSmallScreen;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
   const cameraBtn = document.getElementById('cameraButton');
-  if (isMobile && navigator.mediaDevices?.getUserMedia) {
+
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isSmallScreen = window.innerWidth < 400;
+
+  const FORCE_SHOW_CAMERA = false; // Enable for development
+
+  if (FORCE_SHOW_CAMERA || isSmallScreen) {
+    console.log('✅ Showing camera button...');
     cameraBtn.style.display = 'flex';
+  } else {
+    console.log('⛔ Camera button not shown: not mobile or no getUserMedia');
   }
 
   textDisplay.focus();
@@ -621,14 +643,6 @@ document.getElementById('cameraButton').addEventListener('click', async () => {
     console.error('🔴 Camera capture failed:', err);
   }
 });
-
-function blobToBase64(blob) {
-  return new Promise((resolve, _) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(',')[1]);
-    reader.readAsDataURL(blob);
-  });
-}
 
 document.addEventListener("paste", function(e) {
     // Cancel the paste
