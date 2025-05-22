@@ -110,6 +110,13 @@ main {
   gap: 10px;
 }
 
+.footer {
+  margin-top: auto;
+  padding: 20px;
+  text-align: center;
+  font-size: 0.8em;
+}
+
 .controls button span,
 .controls button {
   line-height: 1;
