@@ -121,6 +121,16 @@ main {
   justify-content: center;
 }
 
+#cameraButton {
+  background-color: purple;
+  color: white;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  justify-content: center;
+}
+
+
 #micButton {
   display: flex;
   background-color: #00BFFF; /* Bright blue */

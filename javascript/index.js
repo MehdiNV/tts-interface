@@ -79,7 +79,7 @@ function interruptAudioPlayback() {
 async function verbaliseTextViaTTS(textToVerbalise) {
   if (isCurrentlySpeaking) {
     // Attempted to pause, treat as a audio.onended
-    
+
     if (repeatSlowerNextTime) {
       repeatSlowerNextTime = false;
     }
@@ -581,8 +581,54 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  const cameraBtn = document.getElementById('cameraButton');
+  if (isMobile && navigator.mediaDevices?.getUserMedia) {
+    cameraBtn.style.display = 'flex';
+  }
+
   textDisplay.focus();
 });
+
+document.getElementById('cameraButton').addEventListener('click', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const track = stream.getVideoTracks()[0];
+    const imageCapture = new ImageCapture(track);
+    const bitmap = await imageCapture.grabFrame();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0);
+    track.stop(); // Stop camera
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+
+    const base64Image = await blobToBase64(blob);
+
+    const response = await fetch('/.netlify/functions/describeImage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64: base64Image })
+    });
+
+    const { descriptionText } = await response.json();
+    textDisplay.innerText = descriptionText;
+    verbaliseTextViaTTS(descriptionText);
+
+  } catch (err) {
+    console.error('🔴 Camera capture failed:', err);
+  }
+});
+
+function blobToBase64(blob) {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(blob);
+  });
+}
 
 document.addEventListener("paste", function(e) {
     // Cancel the paste
