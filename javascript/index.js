@@ -17,6 +17,7 @@ const infoBtn = document.getElementById('infoButton');
 const infoModal = document.getElementById('infoModal');
 const closeInfo = document.getElementById('closeInfo');
 
+let currentWebsiteLanguage;
 const uiTranslations = {
   'de-DE': {
     play: 'Text abspielen',
@@ -81,10 +82,10 @@ let currentAudio = null;
 let wordMap = {};
 let repeatSlowerNextTime = false;
 
-// -----------------------------------------------------------------------------
+// Logic to handle user preferances --------------------------------------------
 
+// Check what the default language is (and if it differs from German)
 async function fetchPreferredLanguage(){
-  // Check what the default language is (and if it differs from German)
   try {
     const res = await fetch('/.netlify/functions/userLanguage');
     const { language } = await res.json();
@@ -93,13 +94,15 @@ async function fetchPreferredLanguage(){
     if (language && ['de-DE', 'en-US', 'fa-IR'].includes(language)) {
       selectedLanguage.value = language;
 
-      updateInterfaceLanguage(language); // apply UI labels
+      updateInterfaceLanguage(language); // Apply UI labels
+      currentWebsiteLanguage = language;
       console.log("🌐 Loaded stored language preference:", language);
     }
   } catch (err) {
     console.error("🔴 No stored preference or error loading it:", err);
     console.log("🌐 Defaulting to German...");
     selectedLanguage.value = 'de-DE';
+    currentWebsiteLanguage = 'de-DE';
   }
 }
 
@@ -112,7 +115,7 @@ function updateInterfaceLanguage(langCode) {
   document.getElementById('settingsButton').innerHTML = labels.settings;
   document.getElementById('infoButton').innerHTML = labels.info;
 
-  // Update keyboard shortcuts
+  // Update the keyboard shortcuts according to language of the user
   const shortcutHeading = document.querySelector('.keyboardShortcuts h2');
   if (shortcutHeading && labels.shortcutsHeading) {
     shortcutHeading.innerText = labels.shortcutsHeading;
@@ -173,7 +176,16 @@ function interruptAudioPlayback() {
     currentAudio = null;
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
-    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+
+    if (currentWebsiteLanguage == 'de-DE') {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+    }
+    else if (currentWebsiteLanguage == 'en-US') {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+    }
+    else {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
+    }
 
     const spans = document.querySelectorAll('#textDisplay .word');
     spans.forEach(span => span.classList.remove('spoken', 'current'));
@@ -198,7 +210,13 @@ async function verbaliseTextViaTTS(textToVerbalise) {
   try {
     isCurrentlySpeaking = true;
     playButton.classList.add('playing');
-    playButton.innerHTML = "⏸ Pause";
+
+    if (currentWebsiteLanguage == 'de-DE' || currentWebsiteLanguage == 'en-US') {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+    }
+    else {
+      playButton.innerHTML = "⏸ مکث";
+    }
 
     const languageCode = await detectWhichLanguage(textToVerbalise);
 
@@ -227,7 +245,17 @@ async function verbaliseTextViaTTS(textToVerbalise) {
     isCurrentlySpeaking = false;
     currentAudio = null;
     playButton.classList.remove('playing');
-    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+
+
+    if (currentWebsiteLanguage == 'de-DE') {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+    }
+    else if (currentWebsiteLanguage == 'en-US') {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+    }
+    else {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
+    }
   }
 
 }
@@ -329,7 +357,16 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       isCurrentlySpeaking = false;
       currentAudio = null;
       playButton.classList.remove('playing');
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+
+      if (currentWebsiteLanguage == 'de-DE') {
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+      }
+      else if (currentWebsiteLanguage == 'en-US') {
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+      }
+      else {
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
+      }
 
       if (repeatSlowerNextTime) {
         repeatSlowerNextTime = false;
@@ -363,7 +400,16 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     console.error('🔴 Google TTS error:', err);
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
-    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+
+    if (currentWebsiteLanguage == 'de-DE') {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+    }
+    else if (currentWebsiteLanguage == 'en-US') {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+    }
+    else {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
+    }
   }
 }
 
@@ -520,7 +566,16 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
       isCurrentlySpeaking = false;
       currentAudio = null;
       playButton.classList.remove('playing');
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+
+      if (currentWebsiteLanguage == 'de-DE') {
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+      }
+      else if (currentWebsiteLanguage == 'en-US') {
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+      }
+      else {
+        playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
+      }
 
       if (repeatSlowerNextTime) {
         repeatSlowerNextTime = false;
@@ -535,11 +590,11 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     };
 
     if (repeatSlowerNextTime) {
-      console.log("Audio is set to play at 0.5 speed...");
+      console.log("▶️ Audio is set to play at 0.5 speed...");
       audio.playbackRate = 0.5;
     }
     else {
-      console.log("Audio is set to play at 0.8 speed...");
+      console.log("▶️ Audio is set to play at 0.8 speed...");
       audio.playbackRate = 0.8;
     }
 
@@ -554,7 +609,16 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     console.error('🔴 Google TTS error:', err);
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
-    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+
+    if (currentWebsiteLanguage == 'de-DE') {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+    }
+    else if (currentWebsiteLanguage == 'en-US') {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+    }
+    else {
+      playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
+    }
   }
 }
 // -----------------------------------------------------------------------------
