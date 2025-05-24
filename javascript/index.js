@@ -8,6 +8,14 @@ const playButton = document.getElementById('playButton');
 const micButton = document.getElementById('micButton');
 const clearButton = document.getElementById('clearButton');
 
+const settingsBtn = document.getElementById('settingsButton');
+const settingsModal = document.getElementById('settingsModal');
+const closeSettings = document.getElementById('closeSettings');
+
+const infoBtn = document.getElementById('infoButton');
+const infoModal = document.getElementById('infoModal');
+const closeInfo = document.getElementById('closeInfo');
+
 let isCurrentlySpeaking = false;
 let isRecording = false;
 let mediaRecorder;
@@ -643,6 +651,51 @@ document.getElementById('cameraButton').addEventListener('click', async () => {
     console.error('🔴 Camera capture failed:', err);
   }
 });
+
+function showModal(modal) {
+  modal.classList.remove('hide');
+  modal.classList.add('show');
+}
+
+function hideModal(modal) {
+  modal.classList.remove('show');
+  modal.classList.add('hide');
+  setTimeout(() => {
+    modal.style.display = 'none';
+  }, 300); // Match animation duration
+}
+
+infoBtn.addEventListener('click', () => {
+  // infoModal.style.display = 'flex';
+  // showModal(infoModal);
+});
+
+closeInfo.addEventListener('click', () => {
+  hideModal(infoModal);
+});
+
+infoModal.addEventListener('click', (e) => {
+  if (e.target === infoModal) {
+    hideModal(infoModal);
+  }
+});
+
+// Repeat the same for settingsModal
+settingsBtn.addEventListener('click', () => {
+  // settingsModal.style.display = 'flex';
+  // showModal(settingsModal);
+});
+
+closeSettings.addEventListener('click', () => {
+  hideModal(settingsModal);
+});
+
+settingsModal.addEventListener('click', (e) => {
+  if (e.target === settingsModal) {
+    hideModal(settingsModal);
+  }
+});
+
 
 document.addEventListener("paste", function(e) {
     // Cancel the paste

@@ -22,7 +22,6 @@
   <title>Accessibility Reading Tools</title>
 </head>
 <body>
-
   <main id="main-content">
     <div class="text-input-container">
       <div id="textDisplay" contenteditable="true" aria-label="Text input area" aria-describedby="textHelp"></div>
@@ -48,8 +47,41 @@
     </div>
   </main>
 
+  <!-- Gradient Line Separator -->
+  <div class="separator-container">
+    <div class="separator-line"></div>
+  </div>
+
+  <!-- Combined Button Row -->
+  <div class="footer-button-row">
+    <button id="settingsButton" class="footer-button" aria-label="Settings">
+      <span aria-hidden="true">⚙️</span>
+    </button>
+    <button id="infoButton" class="footer-button" aria-label="Information">
+      <span aria-hidden="true">ℹ️</span>
+    </button>
+  </div>
+
+  <!-- Info Modal -->
+  <div id="infoModal" class="modal-backdrop">
+    <div class="modal-content">
+      <h2>Information</h2>
+      <p>This tool helps users convert speech to text and text to speech, with real-time highlighting.</p>
+      <button id="closeInfo" style="margin-top: 20px; font-size: 1.2em;">Close</button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-backdrop">
+    <div class="modal-content">
+      <h2>Settings</h2>
+      <p>Settings go here...</p>
+      <button id="closeSettings" style="margin-top: 20px; font-size: 1.2em;">Close</button>
+    </div>
+  </div>
+
   <footer class="footer">
-    This site is powered by <a href="https://www.netlify.com/" target="_blank" rel="noopener noreferrer" style="color: #00ad9f;">Netlify</a>.
+    This site is powered by <a href="https://www.netlify.com/" target="_blank" rel="noopener noreferrer" style="color: #00ad9f;">Netlify</a>
   </footer>
 
   <script type="module" src="javascript/index.js"></script>
