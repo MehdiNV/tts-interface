@@ -67,7 +67,7 @@
     <div class="modal-content">
       <h2>Information</h2>
       <p>This tool helps users convert speech to text and text to speech, with real-time highlighting.</p>
-      <button id="closeInfo" style="margin-top: 20px; font-size: 1.2em;">Close</button>
+      <button id="closeInfo" class="modal-close-button">Close</button>
     </div>
   </div>
 
@@ -75,8 +75,15 @@
   <div id="settingsModal" class="modal-backdrop">
     <div class="modal-content">
       <h2>Settings</h2>
-      <p>Settings go here...</p>
-      <button id="closeSettings" style="margin-top: 20px; font-size: 1.2em;">Close</button>
+
+      <label for="languageSelect" style="display: block; font-weight: bold; margin-bottom: 10px;">Preferred Language</label>
+      <select id="languageSelect" style="font-size: 1em; padding: 8px; width: 80%;">
+        <option value="de-DE" selected>German</option>
+        <option value="en-US">English</option>
+        <option value="fa-IR">Persian</option>
+      </select>
+
+      <button id="closeSettings" class="modal-close-button">Close</button>
     </div>
   </div>
 

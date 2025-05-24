@@ -11,10 +11,62 @@ const clearButton = document.getElementById('clearButton');
 const settingsBtn = document.getElementById('settingsButton');
 const settingsModal = document.getElementById('settingsModal');
 const closeSettings = document.getElementById('closeSettings');
+const languageSelect = document.getElementById('languageSelect');
 
 const infoBtn = document.getElementById('infoButton');
 const infoModal = document.getElementById('infoModal');
 const closeInfo = document.getElementById('closeInfo');
+
+const uiTranslations = {
+  'de-DE': {
+    play: 'Text abspielen',
+    clear: 'Klar',
+    mic: '🎤',
+    settings: '⚙️',
+    info: 'ℹ️',
+    shortcutsHeading: 'Tastenkombinationen',
+    shortcuts: [
+      '<strong>R</strong>: Aufnahme starten/stoppen',
+      '<strong>P</strong>: Text vorlesen',
+      '<strong>C</strong>: Text löschen',
+      '<strong>Escape</strong>: Text löschen',
+      '<strong>Leertaste</strong>: Text abspielen/pause',
+      '<strong>Shift + ?</strong>: Tastenkombinationen vorlesen'
+    ]
+  },
+  'en-US': {
+    play: 'Play Text',
+    clear: 'Clear',
+    mic: '🎤',
+    settings: '⚙️',
+    info: 'ℹ️',
+    shortcutsHeading: 'Keyboard Shortcuts',
+    shortcuts: [
+      '<strong>R</strong>: Start/stop recording',
+      '<strong>P</strong>: Play text',
+      '<strong>C</strong>: Clear text',
+      '<strong>Escape</strong>: Clear text',
+      '<strong>Spacebar</strong>: Play/pause text',
+      '<strong>Shift + ?</strong>: Read keyboard shortcuts aloud'
+    ]
+  },
+  'fa-IR': {
+    play: 'پخش متن',
+    clear: 'پاک کردن',
+    mic: '🎤',
+    settings: '⚙️',
+    info: 'ℹ️',
+    shortcutsHeading: 'میانبرهای صفحه‌کلید',
+    shortcuts: [
+      '<strong>R</strong>: شروع/توقف ضبط',
+      '<strong>P</strong>: پخش متن',
+      '<strong>C</strong>: پاک‌سازی متن',
+      '<strong>Escape</strong>: پاک‌سازی متن',
+      '<strong>Spacebar</strong>: پخش/توقف متن',
+      '<strong>Shift + ?</strong>: خواندن میانبرهای صفحه‌کلید'
+    ]
+  }
+};
 
 let isCurrentlySpeaking = false;
 let isRecording = false;
@@ -28,6 +80,50 @@ let recordingStartTime = null;
 let currentAudio = null;
 let wordMap = {};
 let repeatSlowerNextTime = false;
+
+// -----------------------------------------------------------------------------
+
+async function fetchPreferredLanguage(){
+  // Check what the default language is (and if it differs from German)
+  try {
+    const res = await fetch('/.netlify/functions/userLanguage');
+    const { language } = await res.json();
+    const selectedLanguage = document.getElementById('languageSelect');
+
+    if (language && ['de-DE', 'en-US', 'fa-IR'].includes(language)) {
+      selectedLanguage.value = language;
+
+      updateInterfaceLanguage(language); // apply UI labels
+      console.log("🌐 Loaded stored language preference:", language);
+    }
+  } catch (err) {
+    console.error("🔴 No stored preference or error loading it:", err);
+    console.log("🌐 Defaulting to German...");
+    selectedLanguage.value = 'de-DE';
+  }
+}
+
+function updateInterfaceLanguage(langCode) {
+  const labels = uiTranslations[langCode] || uiTranslations['de-DE'];
+
+  document.getElementById('playButton').innerHTML = `<span aria-hidden="true">▶</span> ${labels.play}`;
+  document.getElementById('clearButton').innerHTML = `<span aria-hidden="true">✕</span> ${labels.clear}`;
+  document.getElementById('micButton').innerHTML = labels.mic;
+  document.getElementById('settingsButton').innerHTML = labels.settings;
+  document.getElementById('infoButton').innerHTML = labels.info;
+
+  // Update keyboard shortcuts
+  const shortcutHeading = document.querySelector('.keyboardShortcuts h2');
+  if (shortcutHeading && labels.shortcutsHeading) {
+    shortcutHeading.innerText = labels.shortcutsHeading;
+  }
+
+  const shortcutList = document.querySelector('.keyboardShortcuts ul');
+  if (shortcutList && labels.shortcuts) {
+    shortcutList.innerHTML = labels.shortcuts.map(item => `<li>${item}</li>`).join('');
+  }
+}
+// -----------------------------------------------------------------------------
 
 // TTS capability for English and German ---------------------------------------
 async function detectWhichLanguage(text) {
@@ -617,6 +713,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('⛔ Camera button not shown: not mobile or no getUserMedia');
   }
 
+  await fetchPreferredLanguage();
+  const selectedLang = document.getElementById('languageSelect').value;
+  updateInterfaceLanguage(selectedLang);
+
   textDisplay.focus();
 });
 
@@ -666,8 +766,8 @@ function hideModal(modal) {
 }
 
 infoBtn.addEventListener('click', () => {
-  // infoModal.style.display = 'flex';
-  // showModal(infoModal);
+  infoModal.style.display = 'flex';
+  showModal(infoModal);
 });
 
 closeInfo.addEventListener('click', () => {
@@ -680,10 +780,25 @@ infoModal.addEventListener('click', (e) => {
   }
 });
 
+languageSelect.addEventListener('change', async (e) => {
+  const selectedLang = e.target.value;
+  updateInterfaceLanguage(selectedLang);
+
+  if (selectedLang !== 'de-DE') {
+    // Persist non-default preferences
+    await fetch('/.netlify/functions/userLanguage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ language: selectedLang })
+    });
+  }
+});
+
+
 // Repeat the same for settingsModal
 settingsBtn.addEventListener('click', () => {
-  // settingsModal.style.display = 'flex';
-  // showModal(settingsModal);
+  settingsModal.style.display = 'flex';
+  showModal(settingsModal);
 });
 
 closeSettings.addEventListener('click', () => {
