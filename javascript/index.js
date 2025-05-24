@@ -602,7 +602,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const FORCE_SHOW_CAMERA = false; // Enable for development
 
-  if (FORCE_SHOW_CAMERA || isSmallScreen) {
+  if (FORCE_SHOW_CAMERA || (isTouchDevice && isSmallScreen)) {
     console.log('✅ Showing camera button...');
     cameraBtn.style.display = 'flex';
   } else {
