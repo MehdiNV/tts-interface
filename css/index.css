@@ -295,6 +295,13 @@ main {
   color: #00ad9f;
 }
 
+.modal-image {
+  max-width: 55%;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid black;
+}
+
 @media (max-width: 600px) {
   .controls {
     flex-direction: column;
