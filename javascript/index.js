@@ -17,7 +17,7 @@ const infoBtn = document.getElementById('infoButton');
 const infoModal = document.getElementById('infoModal');
 const closeInfo = document.getElementById('closeInfo');
 
-let currentWebsiteLanguage;
+let currentWebsiteLanguage = 'de-DE';
 const uiTranslations = {
   'de-DE': {
     play: 'Text abspielen',
@@ -85,12 +85,15 @@ let repeatSlowerNextTime = false;
 // Logic to handle user preferances --------------------------------------------
 function adjustInterfaceByPreferredLanguage(){
   if (currentWebsiteLanguage == 'de-DE') {
+    console.log("Adjusting interface to match German language...");
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
   }
   else if (currentWebsiteLanguage == 'en-US') {
+    console.log("Adjusting interface to match English language...");
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
   }
   else {
+    console.log("Adjusting interface to match Persian language...");
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
   }
 }

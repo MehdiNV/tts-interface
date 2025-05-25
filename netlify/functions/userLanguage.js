@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
-const UPSTASH_REST_URL = process.env.UPSTASH_REST_URL;
-const UPSTASH_REST_TOKEN = process.env.UPSTASH_REST_TOKEN;
+const UPSTASH_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const expiryLimit=2592000; // Expires after 30 days
 
@@ -63,5 +63,5 @@ exports.handler = async function (event) {
     }
   }
 
-  return { statusCode: 405, body: 'Method Not Allowed' };
+  return { statusCode: 405, body: 'Method is not allowed' };
 };
