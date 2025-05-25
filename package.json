@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/MehdiNV/tts-interface/issues"
   },
-  "homepage": "https://github.com/MehdiNV/tts-interface#readme",
+  "homepage": "https://github.com/MehdiNV/tts-interface/docs#readme",
   "devDependencies": {
     "electron": "^35.1.4"
   },
@@ -28,6 +28,7 @@
     "aws-sdk": "^2.1692.0",
     "electron-reload": "^2.0.0-alpha.1",
     "multiparty": "^4.2.3",
+    "node-fetch": "^2.7.0",
     "openai": "^4.100.0"
   }
 }
