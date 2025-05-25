@@ -83,6 +83,17 @@ let wordMap = {};
 let repeatSlowerNextTime = false;
 
 // Logic to handle user preferances --------------------------------------------
+function adjustInterfaceByPreferredLanguage(){
+  if (currentWebsiteLanguage == 'de-DE') {
+    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+  }
+  else if (currentWebsiteLanguage == 'en-US') {
+    playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
+  }
+  else {
+    playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
+  }
+}
 
 // Check what the default language is (and if it differs from German)
 async function fetchPreferredLanguage(){
@@ -177,15 +188,7 @@ function interruptAudioPlayback() {
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
 
-    if (currentWebsiteLanguage == 'de-DE') {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
-    }
-    else if (currentWebsiteLanguage == 'en-US') {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-    }
-    else {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
-    }
+    adjustInterfaceByPreferredLanguage();
 
     const spans = document.querySelectorAll('#textDisplay .word');
     spans.forEach(span => span.classList.remove('spoken', 'current'));
@@ -246,16 +249,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
     currentAudio = null;
     playButton.classList.remove('playing');
 
-
-    if (currentWebsiteLanguage == 'de-DE') {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
-    }
-    else if (currentWebsiteLanguage == 'en-US') {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-    }
-    else {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
-    }
+    adjustInterfaceByPreferredLanguage();
   }
 
 }
@@ -358,15 +352,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       currentAudio = null;
       playButton.classList.remove('playing');
 
-      if (currentWebsiteLanguage == 'de-DE') {
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
-      }
-      else if (currentWebsiteLanguage == 'en-US') {
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-      }
-      else {
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
-      }
+      adjustInterfaceByPreferredLanguage();
 
       if (repeatSlowerNextTime) {
         repeatSlowerNextTime = false;
@@ -401,15 +387,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
 
-    if (currentWebsiteLanguage == 'de-DE') {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
-    }
-    else if (currentWebsiteLanguage == 'en-US') {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-    }
-    else {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
-    }
+    adjustInterfaceByPreferredLanguage();
   }
 }
 
@@ -567,15 +545,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
       currentAudio = null;
       playButton.classList.remove('playing');
 
-      if (currentWebsiteLanguage == 'de-DE') {
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
-      }
-      else if (currentWebsiteLanguage == 'en-US') {
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-      }
-      else {
-        playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
-      }
+      adjustInterfaceByPreferredLanguage();
 
       if (repeatSlowerNextTime) {
         repeatSlowerNextTime = false;
@@ -610,15 +580,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
 
-    if (currentWebsiteLanguage == 'de-DE') {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
-    }
-    else if (currentWebsiteLanguage == 'en-US') {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
-    }
-    else {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> پخش متن";
-    }
+    adjustInterfaceByPreferredLanguage();
   }
 }
 // -----------------------------------------------------------------------------
