@@ -218,7 +218,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
     playButton.classList.add('playing');
 
     if (currentWebsiteLanguage == 'de-DE' || currentWebsiteLanguage == 'en-US') {
-      playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
+      playButton.innerHTML = "⏸ Pause";
     }
     else {
       playButton.innerHTML = "⏸ مکث";
