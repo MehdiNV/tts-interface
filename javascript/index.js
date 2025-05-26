@@ -370,6 +370,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     };
 
     audio.onplay = () => {
+      console.log("▶️ Audio started — scheduling highlights");
       if (timepoints.length > 0) requestAnimationFrame(trackAudioProgress);
     };
 
@@ -428,21 +429,24 @@ function adjustInitialTimepointsToPlaybackSpeed(timepoints, isLeftToRightAudio) 
     return [];
   }
 
+  console.log("Attempting to alter timepoints...");
+  console.log(timepoints);
+
   const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.5 : 0.8;
 
   if (isLeftToRightAudio) {
     return timepoints.map(timepointElement => {
       return {
-        timeSeconds: (timepointElement.timeSeconds / playbackSpeedEqualiser),
-        markName: timepointElement.markName
+        start: (parseFloat(timepointElement.start) / playbackSpeedEqualiser),
+        end: (parseFloat(timepointElement.end) / playbackSpeedEqualiser)
       }
     });
   }
   else {
     return timepoints.map(timepointElement => {
       return {
-        start: (parseFloat(timepointElement.start) / playbackSpeedEqualiser),
-        end: (parseFloat(timepointElement.end) / playbackSpeedEqualiser)
+        timeSeconds: (timepointElement.timeSeconds / playbackSpeedEqualiser),
+        markName: timepointElement.markName
       }
     });
   }
@@ -506,7 +510,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
         throw new Error(result.error || 'Invalid audio response from Google TTS');
       }
 
-      timepoints = adjustInitialTimepointsToPlaybackSpeed(result.timepoints, true);
+      timepoints = adjustInitialTimepointsToPlaybackSpeed(result.timepoints, false);
       audioBlob = new Blob([Uint8Array.from(atob(result.audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
     }
 
@@ -739,7 +743,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const FORCE_SHOW_CAMERA = (window.location.hostname === 'localhost'); // Enable for development
 
-  if ((FORCE_CAMERA_BUTTON || shouldShowCameraButton()) && navigator.mediaDevices?.getUserMedia) {
+  if ((FORCE_SHOW_CAMERA || shouldShowCameraButton()) && navigator.mediaDevices?.getUserMedia) {
     console.log('✅ Showing camera button...');
     cameraBtn.style.display = 'flex';
   } else {
