@@ -811,6 +811,7 @@ infoModal.addEventListener('click', (e) => {
 
 languageSelect.addEventListener('change', async (e) => {
   const selectedLang = e.target.value;
+  currentWebsiteLanguage = selectedLang;
   updateInterfaceLanguage(selectedLang);
 
   if (selectedLang !== 'de-DE') {
