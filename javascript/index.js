@@ -733,9 +733,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   const isSmallScreen = window.innerWidth < 400;
 
-  const FORCE_SHOW_CAMERA = false; // Enable for development
+  const FORCE_SHOW_CAMERA = (window.location.hostname === 'localhost'); // Enable for development
 
-  if (FORCE_SHOW_CAMERA || (isTouchDevice && isSmallScreen)) {
+  if ((FORCE_CAMERA_BUTTON || shouldShowCameraButton()) && navigator.mediaDevices?.getUserMedia) {
     console.log('✅ Showing camera button...');
     cameraBtn.style.display = 'flex';
   } else {
