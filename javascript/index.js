@@ -226,24 +226,27 @@ async function verbaliseTextViaTTS(textToVerbalise) {
 
     const languageCode = await detectWhichLanguage(textToVerbalise);
 
-  if (languageCode !== 'fa-IR') {
-    const payload = {
-      text: convertTextToSSML(textToVerbalise),
-      languageCode,
-      isSSML: true
-    };
+    if (languageCode !== 'fa-IR') {
+      const payload = {
+        text: convertTextToSSML(textToVerbalise),
+        languageCode,
+        isSSML: true
+      };
 
-    utiliseGoogleTTS(textToVerbalise, payload)
-  }
-  else {
-    const payload = {
-      text: textToVerbalise,
-      languageCode,
-      isSSML: false
-    };
+      console.log("Using Google's TTS as language is English or German");
 
-    utiliseOpenAiTTS(textToVerbalise, payload)
-  }
+      utiliseGoogleTTS(textToVerbalise, payload)
+    }
+    else {
+      const payload = {
+        text: textToVerbalise,
+        languageCode,
+        isSSML: false
+      };
+
+      console.log("Using OpenAI's TTS as language is Farsi");
+      utiliseOpenAiTTS(textToVerbalise, payload)
+    }
   }
   catch (err) {
     console.error("🔴 Failed to execute TTS: ", err);
@@ -307,6 +310,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       audioBlob = new Blob([Uint8Array.from(atob(result.audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
     }
 
+    const audioUrl = URL.createObjectURL(audioBlob);
     const audio = new Audio(audioUrl);
     currentAudio = audio;
 
