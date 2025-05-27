@@ -64,6 +64,8 @@ const infoBtn = document.getElementById('infoButton');
 const infoModal = document.getElementById('infoModal');
 const closeInfo = document.getElementById('closeInfo');
 
+let highlightFrameId = null;
+
 // Variables and function to handle caching
 let lastCachedText = '';
 let lastCachedLanguageCode = '';
@@ -209,18 +211,26 @@ function interruptAudioPlayback() {
 }
 
 async function verbaliseTextViaTTS(textToVerbalise) {
-  if (isCurrentlySpeaking) {
-    // Attempted to pause, treat as a audio.onended
-
-    if (repeatSlowerNextTime) {
-      repeatSlowerNextTime = false;
+  if (isCurrentlySpeaking && currentAudio) {
+    if (!currentAudio.paused) {
+      // 🔴 Pause audio and highlighting
+      currentAudio.pause();
+      playButton.innerHTML = currentWebsiteLanguage === 'fa-IR' ? "▶ پخش متن" :
+                             currentWebsiteLanguage === 'de-DE' ? "▶ Text abspielen" : "▶ Play Text";
+      playButton.classList.remove('playing');
+      if (highlightFrameId) {
+        cancelAnimationFrame(highlightFrameId);
+        highlightFrameId = null;
+      }
+      return;
+    } else {
+      // 🟢 Resume audio and highlighting
+      currentAudio.play();
+      playButton.innerHTML = currentWebsiteLanguage === 'fa-IR' ? "⏸ مکث" :
+                             currentWebsiteLanguage === 'de-DE' ? "⏸ Pause" : "⏸ Pause";
+      playButton.classList.add('playing');
+      return;
     }
-    else {
-      repeatSlowerNextTime = true;
-    }
-
-    interruptAudioPlayback();
-    return;
   }
 
   try {
@@ -361,7 +371,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
         });
       }
 
-      requestAnimationFrame(trackAudioProgress);
+      highlightFrameId = requestAnimationFrame(trackAudioProgress);
     }
 
     audio.onended = () => {
@@ -380,8 +390,10 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     };
 
     audio.onplay = () => {
-      console.log("▶️ Farsi audio is starting — scheduling highlights...");
-      if (timepoints.length > 0) requestAnimationFrame(trackAudioProgress);
+      console.log("▶️ Farsi audio is starting or resuming — scheduling highlights...");
+      if (timepoints.length > 0) {
+        highlightFrameId = requestAnimationFrame(trackAudioProgress);
+      }
     };
 
     if (repeatSlowerNextTime) {
@@ -554,7 +566,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
         }
       }
 
-      requestAnimationFrame(trackAudioProgress);
+      highlightFrameId = requestAnimationFrame(trackAudioProgress);
     }
 
     audio.onended = () => {
@@ -573,7 +585,11 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     };
 
     audio.onplay = () => {
-      if (timepoints.length > 0) requestAnimationFrame(trackAudioProgress);
+      console.log("▶️ English / German audio is starting or resuming — scheduling highlights...");
+
+      if (timepoints.length > 0) {
+        highlightFrameId = requestAnimationFrame(trackAudioProgress);
+      }
     };
 
     if (repeatSlowerNextTime) {
