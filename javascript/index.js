@@ -297,7 +297,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     let audioBlob;
     let timepoints;
 
-    // Check if we have cached this audio already - if so, just re-play this one
+    // Check if we have cached this audio already - if so, just re-play existing one
     if (isAudioAlreadyCached(textToVerbalise)) {
       console.log('📚 Re-playing cached copy...');
       audioBlob = lastCachedAudioBlob;
@@ -497,7 +497,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     let audioBlob;
     let timepoints;
 
-    // Check if we have cached this audio already - if so, just re-play this one
+    // Check if we have cached this audio already - if so, just re-play existing one
     if (isAudioAlreadyCached(textToVerbalise)) {
       console.log('📚 Re-playing cached copy...');
       audioBlob = lastCachedAudioBlob;
@@ -649,7 +649,7 @@ async function toggleRecording() {
 
           const data = await response.json();
           if (data.text) {
-            textDisplay.innerText = data.text;
+            textDisplay.innerText += (textDisplay.innerText.trim() ? ' ' : '') + data.text;
             console.log("📗 Transcription was successful")
           } else {
             console.error("🔴 There was a failure in accessing the transcription")
