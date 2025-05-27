@@ -797,7 +797,7 @@ function hideModal(modal) {
   modal.classList.add('hide');
   setTimeout(() => {
     modal.style.display = 'none';
-  }, 300); // Match animation duration
+  }, 300); // 300 is set in order to match the animation duration
 }
 
 infoBtn.addEventListener('click', () => {
