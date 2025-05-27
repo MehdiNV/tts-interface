@@ -706,6 +706,7 @@ function clearText() {
   interruptAudioPlayback();
   repeatSlowerNextTime = false;
   textDisplay.innerText = '';
+  restartButton.disabled = true;
   textDisplay.focus();
 }
 // -----------------------------------------------------------------------------
