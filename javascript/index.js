@@ -1,23 +1,3 @@
-let lastCachedText = '';
-let lastCachedLanguageCode = '';
-let lastCachedAudioBlob = null;
-let lastCachedTimepoints = [];
-
-const textDisplay = document.getElementById('textDisplay');
-const playButton = document.getElementById('playButton');
-const micButton = document.getElementById('micButton');
-const clearButton = document.getElementById('clearButton');
-
-const settingsBtn = document.getElementById('settingsButton');
-const settingsModal = document.getElementById('settingsModal');
-const closeSettings = document.getElementById('closeSettings');
-const languageSelect = document.getElementById('languageSelect');
-
-const infoBtn = document.getElementById('infoButton');
-const infoModal = document.getElementById('infoModal');
-const closeInfo = document.getElementById('closeInfo');
-
-let currentWebsiteLanguage = 'de-DE';
 const uiTranslations = {
   'de-DE': {
     play: 'Text abspielen',
@@ -69,6 +49,35 @@ const uiTranslations = {
   }
 };
 
+// Variables to fetch local elements
+const textDisplay = document.getElementById('textDisplay');
+const playButton = document.getElementById('playButton');
+const micButton = document.getElementById('micButton');
+const clearButton = document.getElementById('clearButton');
+
+const settingsBtn = document.getElementById('settingsButton');
+const settingsModal = document.getElementById('settingsModal');
+const closeSettings = document.getElementById('closeSettings');
+const languageSelect = document.getElementById('languageSelect');
+
+const infoBtn = document.getElementById('infoButton');
+const infoModal = document.getElementById('infoModal');
+const closeInfo = document.getElementById('closeInfo');
+
+// Variables and function to handle caching
+let lastCachedText = '';
+let lastCachedLanguageCode = '';
+let lastCachedAudioBlob = null;
+let lastCachedTimepoints = [];
+
+function isAudioAlreadyCached(textToVerbalise) {
+  return true ? (textToVerbalise === lastCachedText && lastCachedAudioBlob) : false;
+}
+
+// Variable to handle UI language
+let currentWebsiteLanguage = 'de-DE';
+
+// Variables to handle transcription, TTS and text-highlighting functionality
 let isCurrentlySpeaking = false;
 let isRecording = false;
 let mediaRecorder;
@@ -99,6 +108,8 @@ function adjustInterfaceByPreferredLanguage(){
 }
 
 // Check what the default language is (and if it differs from German)
+// @parameter Input: None
+// @parameter Outut: None (Simply call updateInterfaceLanguage, and set currentWebsiteLanguage value)
 async function fetchPreferredLanguage(){
   try {
     const res = await fetch('/.netlify/functions/userLanguage');
@@ -108,7 +119,7 @@ async function fetchPreferredLanguage(){
     if (language && ['de-DE', 'en-US', 'fa-IR'].includes(language)) {
       selectedLanguage.value = language;
 
-      updateInterfaceLanguage(language); // Apply UI labels
+      updateInterfaceLanguage(language); // Apply UI labels throughout the website
       currentWebsiteLanguage = language;
       console.log("🌐 Loaded stored language preference:", language);
     }
@@ -120,14 +131,13 @@ async function fetchPreferredLanguage(){
   }
 }
 
+// @parameter Input: String (ISO-appropriate code to represent language e.g. en)
+// @parameter Outut: None (Simply adjusts UI labels)
 function updateInterfaceLanguage(langCode) {
-  const labels = uiTranslations[langCode] || uiTranslations['de-DE'];
+  const appropriateLabels = uiTranslations[langCode] || uiTranslations['de-DE'];
 
-  document.getElementById('playButton').innerHTML = `<span aria-hidden="true">▶</span> ${labels.play}`;
-  document.getElementById('clearButton').innerHTML = `<span aria-hidden="true">✕</span> ${labels.clear}`;
-  document.getElementById('micButton').innerHTML = labels.mic;
-  document.getElementById('settingsButton').innerHTML = labels.settings;
-  document.getElementById('infoButton').innerHTML = labels.info;
+  playButton.innerHTML = `<span aria-hidden="true">▶</span> ${appropriateLabels.play}`;
+  clearButton.innerHTML = `<span aria-hidden="true">✕</span> ${appropriateLabels.clear}`;
 
   // Update the keyboard shortcuts according to language of the user
   const shortcutHeading = document.querySelector('.keyboardShortcuts h2');
@@ -167,10 +177,10 @@ async function detectWhichLanguage(text) {
     console.error("🔴 Failed to liase with Detect Language API, error: ", error)
     console.warn('🔍 Detect Language API failed, falling back to regex-based detection');
 
-    // Fallback using your original regex logic
-    if (/[؀-ۿ]/.test(text)) return 'fa-IR'; // Farsi/Persian
-    if (/[À-ɏ]/.test(text) || /\b(und|ist|nicht|das|ein)\b/i.test(text)) return 'de-DE'; // German
-    return 'en-US'; // Default fallback - English
+    // Fallback via regex logic...
+    if (/[؀-ۿ]/.test(text)) return 'fa-IR'; // Regex detected as Farsi/Persian
+    if (/[À-ɏ]/.test(text) || /\b(und|ist|nicht|das|ein)\b/i.test(text)) return 'de-DE'; // Regex detected as German
+    return 'en-US'; // Default Regex fallback - rely and return English language
   }
 }
 
@@ -418,10 +428,6 @@ function highlightTextByWordsLeftToRight(text) {
     span.textContent = word + ' ';
     textDisplay.appendChild(span);
   });
-}
-
-function isAudioAlreadyCached(textToVerbalise) {
-  return true ? (textToVerbalise === lastCachedText && lastCachedAudioBlob) : false;
 }
 
 function adjustInitialTimepointsToPlaybackSpeed(timepoints, isLeftToRightAudio) {
