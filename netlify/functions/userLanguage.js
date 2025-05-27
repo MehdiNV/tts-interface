@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const UPSTASH_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-const expiryLimit=2592000; // Expires after 30 days
+const expiryLimit = 2592000; // Expires after 30 days
 
 exports.handler = async function (event) {
   const ip = event.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
@@ -25,9 +25,9 @@ exports.handler = async function (event) {
     const result = await res.json();
     const language = result.result;
 
-    // Refresh expiry ONLY if a preference exists
+    // Refresh expiry only if a preference already exists - reset back to a month
     if (language) {
-      await fetch(`${UPSTASH_REST_URL}/set/${key}/${language}?EX=2592000`, {
+      await fetch(`${UPSTASH_REST_URL}/set/${key}/${language}?EX=${expiryLimit}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${UPSTASH_REST_TOKEN}` }
       });
@@ -53,7 +53,7 @@ exports.handler = async function (event) {
 
       return {
         statusCode: 200,
-        body: JSON.stringify({ message: 'Saved' })
+        body: JSON.stringify({ message: 'Saved language settings correctly' })
       };
     } catch (err) {
       return {
