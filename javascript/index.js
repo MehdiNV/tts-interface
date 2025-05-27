@@ -370,16 +370,16 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     };
 
     audio.onplay = () => {
-      console.log("▶️ Audio started — scheduling highlights");
+      console.log("▶️ Farsi audio is starting — scheduling highlights...");
       if (timepoints.length > 0) requestAnimationFrame(trackAudioProgress);
     };
 
     if (repeatSlowerNextTime) {
-      console.log("Audio is set to play at 0.5 speed...");
+      console.log("Farsi audio is set to play at 0.5 speed...");
       audio.playbackRate = 0.5;
     }
     else {
-      console.log("Audio is set to play at 0.8 speed...");
+      console.log("Farsi audio is set to play at 0.8 speed...");
       audio.playbackRate = 0.8;
     }
 
@@ -445,7 +445,7 @@ function adjustInitialTimepointsToPlaybackSpeed(timepoints, isLeftToRightAudio) 
   else {
     return timepoints.map(timepointElement => {
       return {
-        timeSeconds: (timepointElement.timeSeconds / playbackSpeedEqualiser),
+        timeSeconds: (parseFloat(timepointElement.timeSeconds) / playbackSpeedEqualiser),
         markName: timepointElement.markName
       }
     });
@@ -571,11 +571,11 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     };
 
     if (repeatSlowerNextTime) {
-      console.log("▶️ Audio is set to play at 0.5 speed...");
+      console.log("▶️ English / German audio is set to play at 0.5 speed...");
       audio.playbackRate = 0.5;
     }
     else {
-      console.log("▶️ Audio is set to play at 0.8 speed...");
+      console.log("▶️ English / German audio is set to play at 0.8 speed...");
       audio.playbackRate = 0.8;
     }
 
@@ -731,17 +731,15 @@ function blobToBase64(blob) {
 
 function shouldShowCameraButton() {
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  const isSmallScreen = window.innerWidth < 768;
+  const isSmallScreen = window.innerWidth < 400;
   return isTouchDevice && isSmallScreen;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   const cameraBtn = document.getElementById('cameraButton');
+  const FORCE_SHOW_CAMERA = false; // Force button to be visible for local development
+  // const FORCE_SHOW_CAMERA = (window.location.hostname === 'localhost'); // Force button to be visible for local development
 
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  const isSmallScreen = window.innerWidth < 400;
-
-  const FORCE_SHOW_CAMERA = (window.location.hostname === 'localhost'); // Enable for development
 
   if ((FORCE_SHOW_CAMERA || shouldShowCameraButton()) && navigator.mediaDevices?.getUserMedia) {
     console.log('✅ Showing camera button...');
