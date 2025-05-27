@@ -52,6 +52,7 @@ const uiTranslations = {
 // Variables to fetch local elements
 const textDisplay = document.getElementById('textDisplay');
 const playButton = document.getElementById('playButton');
+const restartButton = document.getElementById('restartButton');
 const micButton = document.getElementById('micButton');
 const clearButton = document.getElementById('clearButton');
 
@@ -143,13 +144,13 @@ function updateInterfaceLanguage(langCode) {
 
   // Update the keyboard shortcuts according to language of the user
   const shortcutHeading = document.querySelector('.keyboardShortcuts h2');
-  if (shortcutHeading && labels.shortcutsHeading) {
-    shortcutHeading.innerText = labels.shortcutsHeading;
+  if (shortcutHeading && appropriateLabels.shortcutsHeading) {
+    shortcutHeading.innerText = appropriateLabels.shortcutsHeading;
   }
 
   const shortcutList = document.querySelector('.keyboardShortcuts ul');
-  if (shortcutList && labels.shortcuts) {
-    shortcutList.innerHTML = labels.shortcuts.map(item => `<li>${item}</li>`).join('');
+  if (shortcutList && appropriateLabels.shortcuts) {
+    shortcutList.innerHTML = appropriateLabels.shortcuts.map(item => `<li>${item}</li>`).join('');
   }
 }
 // -----------------------------------------------------------------------------
@@ -202,6 +203,7 @@ function interruptAudioPlayback() {
     currentAudio = null;
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
+    restartButton.disabled = true;
 
     adjustInterfaceByPreferredLanguage();
 
@@ -214,6 +216,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
   if (isCurrentlySpeaking && currentAudio) {
     if (!currentAudio.paused) {
       // 🔴 Pause audio and highlighting
+      restartButton.disabled = false;
       currentAudio.pause();
       playButton.innerHTML = currentWebsiteLanguage === 'fa-IR' ? "▶ پخش متن" :
                              currentWebsiteLanguage === 'de-DE' ? "▶ Text abspielen" : "▶ Play Text";
@@ -226,6 +229,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
     } else {
       // 🟢 Resume audio and highlighting
       currentAudio.play();
+      restartButton.disabled = true;
       playButton.innerHTML = currentWebsiteLanguage === 'fa-IR' ? "⏸ مکث" :
                              currentWebsiteLanguage === 'de-DE' ? "⏸ Pause" : "⏸ Pause";
       playButton.classList.add('playing');
@@ -377,6 +381,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     audio.onended = () => {
       isCurrentlySpeaking = false;
       currentAudio = null;
+      restartButton.disabled = true;
       playButton.classList.remove('playing');
 
       adjustInterfaceByPreferredLanguage();
@@ -572,6 +577,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     audio.onended = () => {
       isCurrentlySpeaking = false;
       currentAudio = null;
+      restartButton.disabled = true;
       playButton.classList.remove('playing');
 
       adjustInterfaceByPreferredLanguage();
@@ -776,6 +782,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   textDisplay.focus();
 });
+
+restartButton.addEventListener('click', () => {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    playButton.classList.remove('playing');
+    isCurrentlySpeaking = true;
+    currentAudio.play();
+
+    playButton.innerHTML = currentWebsiteLanguage === 'fa-IR' ? "⏸ مکث" :
+                           currentWebsiteLanguage === 'de-DE' ? "⏸ Pause" : "⏸ Pause";
+
+    if (highlightFrameId) {
+      cancelAnimationFrame(highlightFrameId);
+      highlightFrameId = null;
+    }
+  }
+});
+
 
 document.getElementById('cameraButton').addEventListener('click', async () => {
   try {

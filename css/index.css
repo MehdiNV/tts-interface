@@ -257,17 +257,46 @@ main {
 }
 
 #playButton:hover,
+#restartButton:hover,
 #micButton:hover,
 #playButton:focus,
+#restartButton:focus
 #cameraButton:focus,
 #clearButton:focus {
   transform: scale(1.05);
   outline: 3px dashed white;
 }
 
+.play-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px; /* space between Play and Restart buttons */
+}
+
 #playButton {
   background-color: green;
   color: white;
+  width: 100%;
+  max-width: 300px;
+}
+
+#restartButton {
+  font-size: 1.5em;
+  padding: 10px 25px;
+  background-color: #444;
+  color: white;
+  border: 2px solid white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  max-width: 300px;
+}
+
+#restartButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 #clearButton {
