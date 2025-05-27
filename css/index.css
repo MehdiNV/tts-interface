@@ -272,7 +272,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px; /* space between Play and Restart buttons */
+  gap: 25px; /* space between Play and Restart buttons */
 }
 
 #playButton {
@@ -285,7 +285,7 @@ main {
 #restartButton {
   font-size: 1.5em;
   padding: 10px 25px;
-  background-color: #444;
+  background-color: #2AAA8A;
   color: white;
   border: 2px solid white;
   border-radius: 6px;
