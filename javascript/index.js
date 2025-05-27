@@ -1,6 +1,7 @@
 const uiTranslations = {
   'de-DE': {
     play: 'Text abspielen',
+    restart: 'Neustart',
     clear: 'Klar',
     mic: '🎤',
     settings: '⚙️',
@@ -17,6 +18,7 @@ const uiTranslations = {
   },
   'en-US': {
     play: 'Play Text',
+    restart: 'Restart',
     clear: 'Clear',
     mic: '🎤',
     settings: '⚙️',
@@ -33,6 +35,7 @@ const uiTranslations = {
   },
   'fa-IR': {
     play: 'پخش متن',
+    restart: 'شروع دوباره',
     clear: 'پاک کردن',
     mic: '🎤',
     settings: '⚙️',
@@ -95,7 +98,7 @@ let wordMap = {};
 let repeatSlowerNextTime = false;
 
 // Logic to handle user preferances --------------------------------------------
-function adjustInterfaceByPreferredLanguage(){
+function adjustPlayButtonByPreferredLanguage(){
   if (currentWebsiteLanguage == 'de-DE') {
     console.log("Adjusting interface to match German language...");
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
@@ -140,6 +143,7 @@ function updateInterfaceLanguage(langCode) {
   const appropriateLabels = uiTranslations[langCode] || uiTranslations['de-DE'];
 
   playButton.innerHTML = `<span aria-hidden="true">▶</span> ${appropriateLabels.play}`;
+  restartButton.innerHTML = `<span aria-hidden="true">🔁</span> ${appropriateLabels.restart}`;
   clearButton.innerHTML = `<span aria-hidden="true">✕</span> ${appropriateLabels.clear}`;
 
   // Update the keyboard shortcuts according to language of the user
@@ -205,7 +209,7 @@ function interruptAudioPlayback() {
     playButton.classList.remove('playing');
     restartButton.disabled = true;
 
-    adjustInterfaceByPreferredLanguage();
+    adjustPlayButtonByPreferredLanguage();
 
     const spans = document.querySelectorAll('#textDisplay .word');
     spans.forEach(span => span.classList.remove('spoken', 'current'));
@@ -279,7 +283,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
     currentAudio = null;
     playButton.classList.remove('playing');
 
-    adjustInterfaceByPreferredLanguage();
+    adjustPlayButtonByPreferredLanguage();
   }
 
 }
@@ -384,7 +388,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       restartButton.disabled = true;
       playButton.classList.remove('playing');
 
-      adjustInterfaceByPreferredLanguage();
+      adjustPlayButtonByPreferredLanguage();
 
       if (repeatSlowerNextTime) {
         repeatSlowerNextTime = false;
@@ -422,7 +426,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
 
-    adjustInterfaceByPreferredLanguage();
+    adjustPlayButtonByPreferredLanguage();
   }
 }
 
@@ -580,7 +584,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
       restartButton.disabled = true;
       playButton.classList.remove('playing');
 
-      adjustInterfaceByPreferredLanguage();
+      adjustPlayButtonByPreferredLanguage();
 
       if (repeatSlowerNextTime) {
         repeatSlowerNextTime = false;
@@ -619,7 +623,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     isCurrentlySpeaking = false;
     playButton.classList.remove('playing');
 
-    adjustInterfaceByPreferredLanguage();
+    adjustPlayButtonByPreferredLanguage();
   }
 }
 // -----------------------------------------------------------------------------
