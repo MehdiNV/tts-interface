@@ -787,7 +787,7 @@ restartButton.addEventListener('click', () => {
   if (currentAudio) {
     currentAudio.pause();
     currentAudio.currentTime = 0;
-    playButton.classList.remove('playing');
+    playButton.classList.add('playing');
     isCurrentlySpeaking = true;
     currentAudio.play();
 

@@ -240,11 +240,12 @@ main {
 
 #micButton {
   display: flex;
+  align-self: center;
   background-color: #00BFFF; /* Bright blue */
   color: black;
   border-radius: 50%;
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   align-items: center;
   justify-content: center;
 
