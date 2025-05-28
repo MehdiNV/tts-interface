@@ -225,8 +225,13 @@ main {
   text-align: center;
 }
 
-.modal-close-button {
-  margin-top: 30px;
+#modalButtonWrapper {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 50px;
+}
+
+.modal-button {
   font-size: 1.2em;
   padding: 12px 24px;
   border: 2px solid black;
@@ -238,6 +243,15 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.modal-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #ccc; /* Optional: make it visibly "greyed out" */
+  border-color: #999;
+  color: #666;
 }
 /* ---------------------------------------------- */
 

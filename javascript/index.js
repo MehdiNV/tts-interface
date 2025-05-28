@@ -85,6 +85,10 @@ function isAudioAlreadyCached(textToVerbalise) {
 let currentWebsiteUserInterfaceLanguage = 'de-DE';
 let currentTranscriptionLanguage = 'de-DE';
 
+const saveSettings = document.getElementById('saveSettings');
+let initialUILang = 'de-DE';
+let initialTxLang = 'de-DE';
+
 // Variables to handle transcription, TTS and text-highlighting functionality
 let isCurrentlySpeaking = false;
 let isRecording = false;
@@ -123,19 +127,24 @@ async function fetchPreferredLanguage(){
     const res = await fetch('/.netlify/functions/userLanguage');
     const { uiLanguage, transcriptionLanguage } = await res.json();
 
-    if (uiLanguage && ['de-DE', 'en-US', 'fa-IR'].includes(language)) {
+    if (uiLanguage && ['de-DE', 'en-US', 'fa-IR'].includes(uiLanguage)) {
       uiLanguageSelector.value = uiLanguage;
       updateInterfaceLanguage(uiLanguage);
       currentWebsiteUserInterfaceLanguage = uiLanguage;
+
+      if (uiLanguage !== 'de-DE') {
+        await fetchPreferredLanguage(uiLanguage);
+      }
+
       console.log("🌐 Loaded stored UI language preference:", uiLanguage);
     }
 
-    if (transcriptionLanguage && ['de-DE', 'en-US', 'fa-IR'].includes(language)) {
+    if (transcriptionLanguage && ['de-DE', 'en-US', 'fa-IR'].includes(transcriptionLanguage)) {
       transcriptionLanguageSelector.value = transcriptionLanguage;
-      currentTranscriptionLanguage = transcriptionLanguage;
+      currentTranscriptionLanguage = transcriptionLanguage;;
       console.log("🌐 Loaded stored transcription language preference:", transcriptionLanguage);
     }
-    
+
   } catch (err) {
     console.error("🔴 No stored preference or error loading it:", err);
     console.log("🌐 Defaulting to German...");
@@ -792,8 +801,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await fetchPreferredLanguage();
-  const selectedLang = document.getElementById('uiLanguageSelector').value;
-  updateInterfaceLanguage(selectedLang);
 
   textDisplay.focus();
 });
@@ -878,33 +885,36 @@ infoModal.addEventListener('click', (e) => {
 });
 
 uiLanguageSelector.addEventListener('change', async (e) => {
-  const selectedLang = e.target.value;
-  currentWebsiteUserInterfaceLanguage = selectedLang;
-  updateInterfaceLanguage(selectedLang);
-
-  const payload = { uiLanguage: selectedLang };
-
-  if (selectedLang !== 'de-DE') {
-    await fetch('/.netlify/functions/userLanguage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-  }
+  const selected = uiLanguageSelector.value;
+  saveSettings.disabled = (selected === initialUILang && transcriptionLanguageSelector.value === initialTxLang);
 });
 
 transcriptionLanguageSelector.addEventListener('change', async (e) => {
-  const selectedLang = e.target.value;
-  currentTranscriptionLanguage = selectedLang;
+  const selected = transcriptionLanguageSelector.value;
+  saveSettings.disabled = (uiLanguageSelector.value === initialUILang && selected === initialTxLang);
+});
 
-  const payload = { transcriptionLanguage: selectedLang };
+saveSettings.addEventListener('click', async () => {
+  const uiLang = uiLanguageSelector.value;
+  const transcriptionLang = transcriptionLanguageSelector.value;
 
-  if (selectedLang !== 'de-DE') {
+  if (uiLang !== initialUILang || transcriptionLang !== initialTxLang) {
     await fetch('/.netlify/functions/userLanguage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        uiLanguage: uiLang,
+        transcriptionLanguage: txLang
+      })
     });
+
+    currentWebsiteUserInterfaceLanguage = uiLang;
+    currentTranscriptionLanguage = transcriptionLang;
+
+    updateInterfaceLanguage(uiLang);
+    initialUILang = uiLang;
+    initialTxLang = transcriptionLang;
+    saveSettings.disabled = true;
   }
 });
 
