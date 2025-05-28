@@ -133,6 +133,7 @@ async function fetchPreferredLanguage(){
 
     if (uiLanguage && ['de-DE', 'en-US', 'fa-IR'].includes(uiLanguage)) {
       uiLanguageSelector.value = uiLanguage;
+      initialUILang = uiLanguage;
       updateInterfaceLanguage(uiLanguage);
       currentWebsiteUserInterfaceLanguage = uiLanguage;
       console.log("🌐 Loaded stored UI language preference:", uiLanguage);
@@ -140,6 +141,7 @@ async function fetchPreferredLanguage(){
 
     if (transcriptionLanguage && ['de-DE', 'en-US', 'fa-IR'].includes(transcriptionLanguage)) {
       transcriptionLanguageSelector.value = transcriptionLanguage;
+      initialTxLang = transcriptionLanguage;
       currentTranscriptionLanguage = transcriptionLanguage;;
       console.log("🌐 Loaded stored transcription language preference:", transcriptionLanguage);
     }
@@ -897,12 +899,26 @@ infoModal.addEventListener('click', (e) => {
 
 uiLanguageSelector.addEventListener('change', async (e) => {
   const selected = uiLanguageSelector.value;
-  saveSettings.disabled = (selected === initialUILang && transcriptionLanguageSelector.value === initialTxLang);
+  saveSettings.disabled = (selected === initialUILang);
 });
 
 transcriptionLanguageSelector.addEventListener('change', async (e) => {
-  const selected = transcriptionLanguageSelector.value;
-  saveSettings.disabled = (uiLanguageSelector.value === initialUILang && selected === initialTxLang);
+  currentTranscriptionLanguage = transcriptionLanguageSelector.value;
+});
+
+window.addEventListener('beforeunload', async () => {
+  try {
+    await fetch('/.netlify/functions/userLanguage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transcriptionLanguage: currentTranscriptionLanguage
+      })
+    });
+    console.log("💾 Transcription language saved before exit");
+  } catch (err) {
+    console.error('🔴 Failed to save transcription language before unload:', err);
+  }
 });
 
 saveSettings.addEventListener('click', async () => {
