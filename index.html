@@ -81,12 +81,23 @@
     <div class="modal-content">
       <h2>Settings</h2>
 
-      <label for="languageSelect" style="display: block; font-weight: bold; margin-bottom: 10px;">Preferred Language</label>
-      <select id="languageSelect" style="font-size: 1em; padding: 8px; width: 80%;">
-        <option value="de-DE" selected>German</option>
-        <option value="en-US">English</option>
-        <option value="fa-IR">Persian</option>
-      </select>
+      <div id = "uiLanguageSelectionBox">
+        <label for="uiLanguageSelect" id="uiLanguageSelectionLabel">Preferred language for the UI:</label>
+        <select id="uiLanguageSelector">
+          <option value="de-DE" selected>German</option>
+          <option value="en-US">English</option>
+          <option value="fa-IR">Persian</option>
+        </select>
+      </div>
+
+      <div id = "transcriptionLanguageSelectionBox">
+        <label for="transcriptionLanguageSelect" id="transcriptionLanguageSelectionLabel">Preferred Language to transcribe to:</label>
+        <select id="transcriptionLanguageSelector">
+          <option value="de-DE" selected>German</option>
+          <option value="en-US">English</option>
+          <option value="fa-IR">Persian</option>
+        </select>
+      </div>
 
       <button id="closeSettings" class="modal-close-button">Close</button>
     </div>

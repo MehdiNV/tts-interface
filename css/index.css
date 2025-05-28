@@ -141,16 +141,6 @@ main {
   margin-bottom: 0px;
 }
 
-/* Modal with fade animation */
-.modal-backdrop.show {
-  display: flex;
-  animation: fadeIn 0.3s ease forwards;
-}
-
-.modal-backdrop.hide {
-  animation: fadeOut 0.3s ease forwards;
-}
-
 .footer-button-row {
   width: 100%;
   display: flex;
@@ -164,6 +154,51 @@ main {
   border: none;
   font-size: 2em;
   cursor: pointer;
+}
+
+/* Modal-specific CSS logics ---------------------- */
+.modal-image {
+  max-width: 55%;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid black;
+}
+
+.modal-backdrop.show {
+  display: flex;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.modal-backdrop.hide {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+#uiLanguageSelectionLabel {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#uiLanguageSelector {
+  font-size: 1em;
+  padding: 8px;
+  width: 80%;
+}
+
+#transcriptionLanguageSelectionBox {
+  margin-top: 40px;
+}
+
+#transcriptionLanguageSelectionLabel {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#transcriptionLanguageSelector {
+  font-size: 1em;
+  padding: 8px;
+  width: 80%;
 }
 
 .modal-backdrop {
@@ -191,7 +226,7 @@ main {
 }
 
 .modal-close-button {
-  margin-top: 20px;
+  margin-top: 30px;
   font-size: 1.2em;
   padding: 12px 24px;
   border: 2px solid black;
@@ -204,6 +239,8 @@ main {
   align-items: center;
   justify-content: center;
 }
+/* ---------------------------------------------- */
+
 
 .footer {
   margin-top: 10px;
@@ -323,13 +360,6 @@ main {
 
 #externalLink {
   color: #00ad9f;
-}
-
-.modal-image {
-  max-width: 55%;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: 1px solid black;
 }
 
 @media (max-width: 600px) {

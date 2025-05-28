@@ -62,7 +62,8 @@ const clearButton = document.getElementById('clearButton');
 const settingsBtn = document.getElementById('settingsButton');
 const settingsModal = document.getElementById('settingsModal');
 const closeSettings = document.getElementById('closeSettings');
-const languageSelect = document.getElementById('languageSelect');
+const uiLanguageSelector = document.getElementById('uiLanguageSelector');
+const transcriptionLanguageSelector = document.getElementById('transcriptionLanguageSelector');
 
 const infoBtn = document.getElementById('infoButton');
 const infoModal = document.getElementById('infoModal');
@@ -80,8 +81,9 @@ function isAudioAlreadyCached(textToVerbalise) {
   return true ? (textToVerbalise === lastCachedText && lastCachedAudioBlob) : false;
 }
 
-// Variable to handle UI language
-let currentWebsiteLanguage = 'de-DE';
+// Variable to handle UI and transcription language
+let currentWebsiteUserInterfaceLanguage = 'de-DE';
+let currentTranscriptionLanguage = 'de-DE';
 
 // Variables to handle transcription, TTS and text-highlighting functionality
 let isCurrentlySpeaking = false;
@@ -99,11 +101,11 @@ let repeatSlowerNextTime = false;
 
 // Logic to handle user preferances --------------------------------------------
 function adjustPlayButtonByPreferredLanguage(){
-  if (currentWebsiteLanguage == 'de-DE') {
+  if (currentWebsiteUserInterfaceLanguage == 'de-DE') {
     console.log("Adjusting interface to match German language...");
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Text abspielen";
   }
-  else if (currentWebsiteLanguage == 'en-US') {
+  else if (currentWebsiteUserInterfaceLanguage == 'en-US') {
     console.log("Adjusting interface to match English language...");
     playButton.innerHTML = "<span aria-hidden='true'>▶</span> Play Text";
   }
@@ -115,25 +117,25 @@ function adjustPlayButtonByPreferredLanguage(){
 
 // Check what the default language is (and if it differs from German)
 // @parameter Input: None
-// @parameter Outut: None (Simply call updateInterfaceLanguage, and set currentWebsiteLanguage value)
+// @parameter Outut: None (Simply call updateInterfaceLanguage, and set currentWebsiteUserInterfaceLanguage value)
 async function fetchPreferredLanguage(){
   try {
     const res = await fetch('/.netlify/functions/userLanguage');
     const { language } = await res.json();
-    const selectedLanguage = document.getElementById('languageSelect');
+    const selectedLanguage = document.getElementById('uiLanguageSelector');
 
     if (language && ['de-DE', 'en-US', 'fa-IR'].includes(language)) {
       selectedLanguage.value = language;
 
       updateInterfaceLanguage(language); // Apply UI labels throughout the website
-      currentWebsiteLanguage = language;
+      currentWebsiteUserInterfaceLanguage = language;
       console.log("🌐 Loaded stored language preference:", language);
     }
   } catch (err) {
     console.error("🔴 No stored preference or error loading it:", err);
     console.log("🌐 Defaulting to German...");
     selectedLanguage.value = 'de-DE';
-    currentWebsiteLanguage = 'de-DE';
+    currentWebsiteUserInterfaceLanguage = 'de-DE';
   }
 }
 
@@ -222,8 +224,8 @@ async function verbaliseTextViaTTS(textToVerbalise) {
       // 🔴 Pause audio and highlighting
       restartButton.disabled = false;
       currentAudio.pause();
-      playButton.innerHTML = currentWebsiteLanguage === 'fa-IR' ? "▶ پخش متن" :
-                             currentWebsiteLanguage === 'de-DE' ? "▶ Text abspielen" : "▶ Play Text";
+      playButton.innerHTML = currentWebsiteUserInterfaceLanguage === 'fa-IR' ? "▶ پخش متن" :
+                             currentWebsiteUserInterfaceLanguage === 'de-DE' ? "▶ Text abspielen" : "▶ Play Text";
       playButton.classList.remove('playing');
       if (highlightFrameId) {
         cancelAnimationFrame(highlightFrameId);
@@ -234,8 +236,8 @@ async function verbaliseTextViaTTS(textToVerbalise) {
       // 🟢 Resume audio and highlighting
       currentAudio.play();
       restartButton.disabled = true;
-      playButton.innerHTML = currentWebsiteLanguage === 'fa-IR' ? "⏸ مکث" :
-                             currentWebsiteLanguage === 'de-DE' ? "⏸ Pause" : "⏸ Pause";
+      playButton.innerHTML = currentWebsiteUserInterfaceLanguage === 'fa-IR' ? "⏸ مکث" :
+                             currentWebsiteUserInterfaceLanguage === 'de-DE' ? "⏸ Pause" : "⏸ Pause";
       playButton.classList.add('playing');
       return;
     }
@@ -245,7 +247,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
     isCurrentlySpeaking = true;
     playButton.classList.add('playing');
 
-    if (currentWebsiteLanguage == 'de-DE' || currentWebsiteLanguage == 'en-US') {
+    if (currentWebsiteUserInterfaceLanguage == 'de-DE' || currentWebsiteUserInterfaceLanguage == 'en-US') {
       playButton.innerHTML = "⏸ Pause";
     }
     else {
@@ -670,7 +672,10 @@ async function toggleRecording() {
           const response = await fetch('/.netlify/functions/transcribeAudio', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ audioBase64: base64Audio })
+            body: JSON.stringify({
+              audioBase64: base64Audio,
+              languageCode: currentTranscriptionLanguage
+            })
           });
 
           const data = await response.json();
@@ -782,7 +787,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await fetchPreferredLanguage();
-  const selectedLang = document.getElementById('languageSelect').value;
+  const selectedLang = document.getElementById('uiLanguageSelector').value;
   updateInterfaceLanguage(selectedLang);
 
   textDisplay.focus();
@@ -796,8 +801,8 @@ restartButton.addEventListener('click', () => {
     isCurrentlySpeaking = true;
     currentAudio.play();
 
-    playButton.innerHTML = currentWebsiteLanguage === 'fa-IR' ? "⏸ مکث" :
-                           currentWebsiteLanguage === 'de-DE' ? "⏸ Pause" : "⏸ Pause";
+    playButton.innerHTML = currentWebsiteUserInterfaceLanguage === 'fa-IR' ? "⏸ مکث" :
+                           currentWebsiteUserInterfaceLanguage === 'de-DE' ? "⏸ Pause" : "⏸ Pause";
 
     if (highlightFrameId) {
       cancelAnimationFrame(highlightFrameId);
@@ -867,9 +872,9 @@ infoModal.addEventListener('click', (e) => {
   }
 });
 
-languageSelect.addEventListener('change', async (e) => {
+uiLanguageSelector.addEventListener('change', async (e) => {
   const selectedLang = e.target.value;
-  currentWebsiteLanguage = selectedLang;
+  currentWebsiteUserInterfaceLanguage = selectedLang;
   updateInterfaceLanguage(selectedLang);
 
   if (selectedLang !== 'de-DE') {
@@ -882,6 +887,12 @@ languageSelect.addEventListener('change', async (e) => {
   }
 });
 
+transcriptionLanguageSelector.addEventListener('change', async (e) => {
+  const selectedLang = e.target.value;
+  currentTranscriptionLanguage = selectedLang;
+
+  // TODO - Remember user preferances
+});
 
 // Repeat the same for settingsModal
 settingsBtn.addEventListener('click', () => {
