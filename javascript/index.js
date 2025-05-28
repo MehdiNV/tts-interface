@@ -919,20 +919,30 @@ transcriptionLanguageSelector.addEventListener('change', async (e) => {
   currentTranscriptionLanguage = transcriptionLanguageSelector.value;
 });
 
-window.addEventListener('beforeunload', async () => {
+function persistPreferences() {
+  const payload = JSON.stringify({
+    transcriptionLanguage: currentTranscriptionLanguage
+  });
+
   try {
-    await fetch('/.netlify/functions/userLanguage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        transcriptionLanguage: currentTranscriptionLanguage
-      })
-    });
+    navigator.sendBeacon(
+      '/.netlify/functions/userLanguage',
+      new Blob([payload], { type: 'application/json' })
+    );
+  }
+  catch (err) {
     console.log("💾 Transcription language saved before exit");
-  } catch (err) {
-    console.error('🔴 Failed to save transcription language before unload:', err);
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    persistPreferences();
   }
 });
+
+window.addEventListener('pagehide', persistPreferences);
+
 
 saveSettings.addEventListener('click', async () => {
   const uiLang = uiLanguageSelector.value;
