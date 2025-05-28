@@ -899,33 +899,74 @@ saveSettings.addEventListener('click', async () => {
   const transcriptionLang = transcriptionLanguageSelector.value;
 
   if (uiLang !== initialUILang || transcriptionLang !== initialTxLang) {
-    await fetch('/.netlify/functions/userLanguage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        uiLanguage: uiLang,
-        transcriptionLanguage: txLang
-      })
-    });
-
-    currentWebsiteUserInterfaceLanguage = uiLang;
-    currentTranscriptionLanguage = transcriptionLang;
-
-    updateInterfaceLanguage(uiLang);
-    initialUILang = uiLang;
-    initialTxLang = transcriptionLang;
+    saveSettings.textContent = 'Saving...';
     saveSettings.disabled = true;
+
+    try {
+      await fetch('/.netlify/functions/userLanguage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uiLanguage: uiLang,
+          transcriptionLanguage: transcriptionLang
+        })
+      });
+
+      // Apply updates
+      currentWebsiteUserInterfaceLanguage = uiLang;
+      currentTranscriptionLanguage = transcriptionLang;
+      updateInterfaceLanguage(uiLang);
+      initialUILang = uiLang;
+      initialTxLang = transcriptionLang;
+
+      // Close the modal after a brief confirmation
+      saveSettings.textContent = 'Saved ✔';
+
+      // Step 1: Let the user read the confirmation
+      setTimeout(() => {
+        saveSettings.textContent = 'Save';
+
+        // Step 2: Start fade-out animation
+        settingsModal.classList.add('fade-out');
+
+        // Step 3: Remove modal after fade completes
+        setTimeout(() => {
+          settingsModal.style.display = 'none';
+          settingsModal.classList.remove('fade-out');
+          saveSettings.disabled = true;
+        }, 600); // Match CSS transition duration
+
+      }, 2000); // Show "Saved ✔" for 1 second
+
+
+    } catch (err) {
+      console.error('🔴 Failed to save preferences:', err);
+      saveSettings.textContent = 'Error ❌';
+      setTimeout(() => {
+        saveSettings.textContent = 'Save';
+        saveSettings.disabled = false;
+      }, 1500);
+    }
+  } else {
+    // If nothing changed, just close immediately
+    settingsModal.style.display = 'none';
   }
 });
 
+
 // Repeat the same for settingsModal
 settingsBtn.addEventListener('click', () => {
-  settingsModal.style.display = 'flex';
-  showModal(settingsModal);
+  settingsModal.classList.remove('fade-out');
+  settingsModal.style.display = 'flex'; // center modal
+  settingsModal.classList.add('show');  // triggers fade-in
 });
 
 closeSettings.addEventListener('click', () => {
-  hideModal(settingsModal);
+  settingsModal.classList.add('fade-out');
+  setTimeout(() => {
+    settingsModal.style.display = 'none';
+    settingsModal.classList.remove('fade-out', 'show');
+  }, 300);
 });
 
 settingsModal.addEventListener('click', (e) => {
