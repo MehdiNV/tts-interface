@@ -60,12 +60,6 @@ exports.handler = async function (event) {
       language: availableTranscriptionLanguages[languageCode]
     });
 
-    // Remove the first word from the first segment
-    const cleanedSegments = [...accurate.segments];
-    if (cleanedSegments.length > 0) {
-      cleanedSegments[0].text = removeFirstWord(cleanedSegments[0].text);
-    }
-
     fs.unlinkSync(tempPath);
 
     return {

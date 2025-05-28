@@ -121,16 +121,21 @@ function adjustPlayButtonByPreferredLanguage(){
 async function fetchPreferredLanguage(){
   try {
     const res = await fetch('/.netlify/functions/userLanguage');
-    const { language } = await res.json();
-    const selectedLanguage = document.getElementById('uiLanguageSelector');
+    const { uiLanguage, transcriptionLanguage } = await res.json();
 
-    if (language && ['de-DE', 'en-US', 'fa-IR'].includes(language)) {
-      selectedLanguage.value = language;
-
-      updateInterfaceLanguage(language); // Apply UI labels throughout the website
-      currentWebsiteUserInterfaceLanguage = language;
-      console.log("🌐 Loaded stored language preference:", language);
+    if (uiLanguage && ['de-DE', 'en-US', 'fa-IR'].includes(language)) {
+      uiLanguageSelector.value = uiLanguage;
+      updateInterfaceLanguage(uiLanguage);
+      currentWebsiteUserInterfaceLanguage = uiLanguage;
+      console.log("🌐 Loaded stored UI language preference:", uiLanguage);
     }
+
+    if (transcriptionLanguage && ['de-DE', 'en-US', 'fa-IR'].includes(language)) {
+      transcriptionLanguageSelector.value = transcriptionLanguage;
+      currentTranscriptionLanguage = transcriptionLanguage;
+      console.log("🌐 Loaded stored transcription language preference:", transcriptionLanguage);
+    }
+    
   } catch (err) {
     console.error("🔴 No stored preference or error loading it:", err);
     console.log("🌐 Defaulting to German...");
@@ -877,12 +882,13 @@ uiLanguageSelector.addEventListener('change', async (e) => {
   currentWebsiteUserInterfaceLanguage = selectedLang;
   updateInterfaceLanguage(selectedLang);
 
+  const payload = { uiLanguage: selectedLang };
+
   if (selectedLang !== 'de-DE') {
-    // Persist non-default preferences
     await fetch('/.netlify/functions/userLanguage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ language: selectedLang })
+      body: JSON.stringify(payload)
     });
   }
 });
@@ -891,7 +897,15 @@ transcriptionLanguageSelector.addEventListener('change', async (e) => {
   const selectedLang = e.target.value;
   currentTranscriptionLanguage = selectedLang;
 
-  // TODO - Remember user preferances
+  const payload = { transcriptionLanguage: selectedLang };
+
+  if (selectedLang !== 'de-DE') {
+    await fetch('/.netlify/functions/userLanguage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
 });
 
 // Repeat the same for settingsModal
