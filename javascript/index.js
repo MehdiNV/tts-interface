@@ -1019,6 +1019,10 @@ textDisplay.addEventListener('click', (e) => {
   target.classList.add('flash');
   setTimeout(() => target.classList.remove('flash'), 400);
 
+  if (navigator.vibrate) {
+    navigator.vibrate(30);
+  }
+
   target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
