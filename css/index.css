@@ -395,6 +395,16 @@ main {
   color: #00ad9f;
 }
 
+@keyframes flashEffect {
+  0%   { background-color: yellow; }
+  50%  { background-color: red; }
+  100% { background-color: red; }
+}
+
+.word.flash {
+  animation: flashEffect 0.4s ease-in-out;
+}
+
 @media (max-width: 600px) {
   .controls {
     flex-direction: column;

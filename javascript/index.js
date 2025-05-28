@@ -103,6 +103,10 @@ let currentAudio = null;
 let wordMap = {};
 let repeatSlowerNextTime = false;
 
+// Variables to handle dynamic playback (e.g. click word to jump to it audio-wise)
+let activeWordSpans = [];
+
+
 // Logic to handle user preferances --------------------------------------------
 function adjustPlayButtonByPreferredLanguage(){
   if (currentWebsiteUserInterfaceLanguage == 'de-DE') {
@@ -354,7 +358,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     currentAudio = audio;
 
     highlightTextByWordsRightToLeft(textToVerbalise);
-    const wordSpans = document.querySelectorAll('#textDisplay .word');
+    activeWordSpans = Array.from(document.querySelectorAll('#textDisplay .word'));
     const words = textToVerbalise.trim().split(/\s+/).map(word => word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase());
 
     function trackAudioProgress() {
@@ -372,16 +376,16 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
 
       console.log(`🎧 time=${currentTime.toFixed(2)}s → activeIndex=${activeIndex}`);
 
-      if (activeIndex !== -1 && wordSpans[activeIndex]) {
-        wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
+      if (activeIndex !== -1 && activeWordSpans[activeIndex]) {
+        activeWordSpans.forEach(span => span.classList.remove('spoken', 'current'));
 
         // Mark all previous words as spoken
         for (let j = 0; j < activeIndex; j++) {
-          wordSpans[j]?.classList.add('spoken');
+          activeWordSpans[j]?.classList.add('spoken');
         }
 
         // Highlight the current word
-        const currentSpan = wordSpans[activeIndex];
+        const currentSpan = activeWordSpans[activeIndex];
         currentSpan.classList.add('current');
         currentSpan.scrollIntoView({
           behavior: 'smooth',
@@ -557,7 +561,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     currentAudio = audio;
 
     highlightTextByWordsLeftToRight(textToVerbalise);
-    const wordSpans = document.querySelectorAll('#textDisplay .word');
+    activeWordSpans = Array.from(document.querySelectorAll('#textDisplay .word'));
     const words = textToVerbalise.trim().split(/\s+/).map(word => word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase());
 
     function trackAudioProgress() {
@@ -576,9 +580,9 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
           const index = words.findIndex(w => w === currentMark);
 
           if (index !== -1) {
-            wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
-            for (let j = 0; j < index; j++) wordSpans[j].classList.add('spoken');
-            const currentSpan = wordSpans[index];
+            activeWordSpans.forEach(span => span.classList.remove('spoken', 'current'));
+            for (let j = 0; j < index; j++) activeWordSpans[j].classList.add('spoken');
+            const currentSpan = activeWordSpans[index];
             currentSpan.classList.add('current');
             currentSpan.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
           }
@@ -985,6 +989,39 @@ closeSettings.addEventListener('click', () => {
     settingsModal.classList.remove('fade-out', 'show');
   }, 300);
 });
+
+textDisplay.addEventListener('click', (e) => {
+  const target = e.target;
+  if (!target.classList.contains('word') || !currentAudio || !lastCachedTimepoints.length) return;
+
+  const index = parseInt(target.dataset.index);
+  if (isNaN(index)) return;
+
+  let seekTo;
+  if ('start' in lastCachedTimepoints[index]) {
+    seekTo = lastCachedTimepoints[index].start;
+  } else if ('timeSeconds' in lastCachedTimepoints[index]) {
+    seekTo = lastCachedTimepoints[index].timeSeconds;
+  } else {
+    return;
+  }
+
+  console.log(`⏩ Seeking to word ${index} at ${seekTo.toFixed(2)}s`);
+  const playbackRate = currentAudio.playbackRate;
+  currentAudio.currentTime = seekTo * playbackRate;
+
+  const wordSpans = document.querySelectorAll('#textDisplay .word');
+  wordSpans.forEach(span => span.classList.remove('spoken', 'current'));
+  for (let i = 0; i < index; i++) wordSpans[i].classList.add('spoken');
+  wordSpans[index].classList.add('current');
+
+  // 🔥 Flash animation
+  target.classList.add('flash');
+  setTimeout(() => target.classList.remove('flash'), 400);
+
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
 
 document.addEventListener("paste", function(e) {
     // Cancel the paste
