@@ -8,7 +8,7 @@ const redis = new Redis({
 const RATE_LIMIT = 5; // max requests
 const WINDOW_SECONDS = 60; // 1 minute
 
-module.exports = const checkRateLimit = async (ip) => {
+module.exports = async function checkRateLimit(ip) {
   const key = `rate:${ip}`;
   const count = await redis.incr(key);
   if (count === 1) await redis.expire(key, WINDOW_SECONDS);
