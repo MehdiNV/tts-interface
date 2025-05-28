@@ -866,16 +866,21 @@ function hideModal(modal) {
   modal.classList.add('hide');
   setTimeout(() => {
     modal.style.display = 'none';
-  }, 300); // 300 is set in order to match the animation duration
+  }, 600); // 600 is set in order to match the animation duration
 }
 
 infoBtn.addEventListener('click', () => {
+  infoModal.classList.remove('fade-out');
   infoModal.style.display = 'flex';
-  showModal(infoModal);
+  infoModal.classList.add('show');
 });
 
 closeInfo.addEventListener('click', () => {
-  hideModal(infoModal);
+  infoModal.classList.add('fade-out');
+  setTimeout(() => {
+    infoModal.style.display = 'none';
+    infoModal.classList.remove('fade-out', 'show');
+  }, 600); // matches your CSS transition
 });
 
 infoModal.addEventListener('click', (e) => {
@@ -961,6 +966,16 @@ settingsBtn.addEventListener('click', () => {
   settingsModal.classList.add('show');  // triggers fade-in
 });
 
+settingsModal.addEventListener('click', (e) => {
+  if (e.target === settingsModal) {
+    settingsModal.classList.add('fade-out');
+    setTimeout(() => {
+      settingsModal.style.display = 'none';
+      settingsModal.classList.remove('fade-out', 'show');
+    }, 300);
+  }
+});
+
 closeSettings.addEventListener('click', () => {
   settingsModal.classList.add('fade-out');
   setTimeout(() => {
@@ -969,11 +984,6 @@ closeSettings.addEventListener('click', () => {
   }, 300);
 });
 
-settingsModal.addEventListener('click', (e) => {
-  if (e.target === settingsModal) {
-    hideModal(settingsModal);
-  }
-});
 
 
 document.addEventListener("paste", function(e) {
