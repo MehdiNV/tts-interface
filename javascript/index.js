@@ -815,6 +815,13 @@ restartButton.addEventListener('click', () => {
       cancelAnimationFrame(highlightFrameId);
       highlightFrameId = null;
     }
+
+    if (repeatSlowerNextTime) {
+      repeatSlowerNextTime = false;
+    }
+    else {
+      repeatSlowerNextTime = true;
+    }
   }
 });
 
@@ -978,8 +985,6 @@ closeSettings.addEventListener('click', () => {
     settingsModal.classList.remove('fade-out', 'show');
   }, 300);
 });
-
-
 
 document.addEventListener("paste", function(e) {
     // Cancel the paste
