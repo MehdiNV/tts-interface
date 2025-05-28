@@ -1,6 +1,7 @@
 const uiTranslations = {
   'de-DE': {
     play: 'Text abspielen',
+    pause: 'Pause',
     restart: 'Neustart',
     clear: 'Klar',
     mic: '🎤',
@@ -18,6 +19,7 @@ const uiTranslations = {
   },
   'en-US': {
     play: 'Play Text',
+    pause: 'Pause',
     restart: 'Restart',
     clear: 'Clear',
     mic: '🎤',
@@ -35,6 +37,7 @@ const uiTranslations = {
   },
   'fa-IR': {
     play: 'پخش متن',
+    pause: 'مکث',
     restart: 'شروع دوباره',
     clear: 'پاک کردن',
     mic: '🎤',
@@ -78,16 +81,25 @@ let lastCachedAudioBlob = null;
 let lastCachedTimepoints = [];
 
 function isAudioAlreadyCached(textToVerbalise) {
-  return true ? (textToVerbalise === lastCachedText && lastCachedAudioBlob) : false;
+  if (textToVerbalise === lastCachedText && lastCachedAudioBlob) {
+    return true;
+  }
+  else {
+    return false;
+  }
 }
 
-// Variable to handle UI and transcription language
+// Variable and function to handle UI and transcription language
 let currentWebsiteUserInterfaceLanguage = 'de-DE';
 let currentTranscriptionLanguage = 'de-DE';
 
 const saveSettings = document.getElementById('saveSettings');
 let initialUILang = 'de-DE';
 let initialTxLang = 'de-DE';
+
+function getLabel(key) {
+  return uiTranslations[currentWebsiteUserInterfaceLanguage]?.[key] || uiTranslations['de-DE'][key];
+}
 
 // Variables to handle transcription, TTS and text-highlighting functionality
 let isCurrentlySpeaking = false;
@@ -101,7 +113,11 @@ let destination;
 let recordingStartTime = null;
 let currentAudio = null;
 let wordMap = {};
+
+// Variables to handle speed of audio playback
 let repeatSlowerNextTime = false;
+const speeds = { 'slow': 0.5, 'normal': 0.8 };
+let currentSpeed = 'normal';
 
 // Variables to handle dynamic playback (e.g. click word to jump to it audio-wise)
 let activeWordSpans = [];
@@ -239,8 +255,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
       // 🔴 Pause audio and highlighting
       restartButton.disabled = false;
       currentAudio.pause();
-      playButton.innerHTML = currentWebsiteUserInterfaceLanguage === 'fa-IR' ? "▶ پخش متن" :
-                             currentWebsiteUserInterfaceLanguage === 'de-DE' ? "▶ Text abspielen" : "▶ Play Text";
+      playButton.innerHTML = `▶ ${getLabel('play')}`;
       playButton.classList.remove('playing');
       if (highlightFrameId) {
         cancelAnimationFrame(highlightFrameId);
@@ -251,8 +266,7 @@ async function verbaliseTextViaTTS(textToVerbalise) {
       // 🟢 Resume audio and highlighting
       currentAudio.play();
       restartButton.disabled = true;
-      playButton.innerHTML = currentWebsiteUserInterfaceLanguage === 'fa-IR' ? "⏸ مکث" :
-                             currentWebsiteUserInterfaceLanguage === 'de-DE' ? "⏸ Pause" : "⏸ Pause";
+      playButton.innerHTML = `▶ ${getLabel('pause')}`;
       playButton.classList.add('playing');
       return;
     }
@@ -366,7 +380,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     function trackAudioProgress() {
       if (!audio || audio.paused || audio.ended) return;
 
-      const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.5 : 0.8;
+      const playbackSpeedEqualiser = repeatSlowerNextTime ? speeds['normal'] : speeds['slow'];
       const currentTime = (audio.currentTime / playbackSpeedEqualiser);
 
       // Find the currently spoken word based on timestamp
@@ -476,7 +490,7 @@ function adjustInitialTimepointsToPlaybackSpeed(timepoints, isLeftToRightAudio) 
   console.log("Attempting to alter timepoints...");
   console.log(timepoints);
 
-  const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.5 : 0.8;
+  const playbackSpeedEqualiser = repeatSlowerNextTime ? speeds['normal'] : speeds['slow'];
 
   if (isLeftToRightAudio) {
     return timepoints.map(timepointElement => {
@@ -569,7 +583,7 @@ async function utiliseGoogleTTS(textToVerbalise, payload) {
     function trackAudioProgress() {
       if (!audio || audio.paused || audio.ended) return;
 
-      const playbackSpeedEqualiser = repeatSlowerNextTime ? 0.5 : 0.8;
+      const playbackSpeedEqualiser = repeatSlowerNextTime ? speeds['normal'] : speeds['slow'];
       const currentTime = audio.currentTime / playbackSpeedEqualiser;
 
       for (let i = 0; i < timepoints.length; i++) {
@@ -814,8 +828,7 @@ restartButton.addEventListener('click', () => {
     isCurrentlySpeaking = true;
     currentAudio.play();
 
-    playButton.innerHTML = currentWebsiteUserInterfaceLanguage === 'fa-IR' ? "⏸ مکث" :
-                           currentWebsiteUserInterfaceLanguage === 'de-DE' ? "⏸ Pause" : "⏸ Pause";
+    playButton.innerHTML = `▶ ${getLabel('pause')}`;
 
     if (highlightFrameId) {
       cancelAnimationFrame(highlightFrameId);

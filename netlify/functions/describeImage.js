@@ -3,18 +3,11 @@ const { ImageAnnotatorClient } = require('@google-cloud/vision');
 const { v2: { Translate } } = require('@google-cloud/translate');
 const vision = new ImageAnnotatorClient();
 const translate = new Translate();
+const checkRateLimit = require('./utils/rateLimit');
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
-
-const RATE_LIMIT = 5; // max requests
-const WINDOW_SECONDS = 60; // 1 minute
 
 // Always decode from GCLOUD_KEY_BASE64
 const keyPath = path.join(os.tmpdir(), 'gcloud-service-key.json');
@@ -32,20 +25,9 @@ process.env.GOOGLE_APPLICATION_CREDENTIALS = keyPath;
 exports.handler = async function(event) {
   // Rate limiting mechanism ---------------------------------------------------
   const clientIp = event.headers['x-forwarded-for'] || 'unknown';
-  const key = `rate:${clientIp}`;
 
-  const count = await redis.incr(key);
-  if (count === 1) {
-    await redis.expire(key, WINDOW_SECONDS); // expire in 60s
-  }
-
-  if (count > RATE_LIMIT) {
-    console.warn(`🚫 Rate limit exceeded for IP: ${clientIp}`);
-
-    return {
-      statusCode: 429,
-      body: JSON.stringify({ error: 'Too many requests. Please slow down.' })
-    };
+  if (await checkRateLimit(clientIp)) {
+    return { statusCode: 429, body: JSON.stringify({ error: 'Too many requests' }) };
   }
   // Rate limiting mechanism ---------------------------------------------------
 
