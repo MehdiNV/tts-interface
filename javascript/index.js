@@ -131,11 +131,6 @@ async function fetchPreferredLanguage(){
       uiLanguageSelector.value = uiLanguage;
       updateInterfaceLanguage(uiLanguage);
       currentWebsiteUserInterfaceLanguage = uiLanguage;
-
-      if (uiLanguage !== 'de-DE') {
-        await fetchPreferredLanguage(uiLanguage);
-      }
-
       console.log("🌐 Loaded stored UI language preference:", uiLanguage);
     }
 
