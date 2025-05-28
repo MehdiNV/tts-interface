@@ -87,6 +87,8 @@ main {
 
 .controls {
   display: flex;
+  align-items: stretch;
+  height: 28vh;
   gap: 120px; /* More space between buttons */
   flex-wrap: wrap;
   justify-content: center;
@@ -342,7 +344,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 25px; /* space between Play and Restart buttons */
+  gap: 15px;
 }
 
 #playButton {
@@ -350,6 +352,11 @@ main {
   color: white;
   width: 100%;
   max-width: 300px;
+}
+
+.play-controls button {
+  flex: 1; /* ← Distributes equal height to both buttons */
+  width: 100%;
 }
 
 #restartButton {
@@ -405,10 +412,34 @@ main {
   animation: flashEffect 0.4s ease-in-out;
 }
 
+.transcription-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+#transcriptionLangWrapper {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+}
+
+#transcriptionLanguageSelector {
+  font-size: 1em;
+  padding: 8px;
+  width: 180px;
+  margin-top: 5px;
+}
+
 @media (max-width: 600px) {
   .controls {
     flex-direction: column;
     gap: 20px;
+    align-items: stretch;
+    height: 100%;
   }
 
   .controls button {

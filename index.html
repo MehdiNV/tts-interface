@@ -29,7 +29,20 @@
 
     <div class="controls">
       <button id="cameraButton" aria-label="Describe image" style="display: none;"><span aria-hidden="true">📷</span></button>
-      <button id="micButton" aria-label="Start or stop recording"><span aria-hidden="true">🎤</span></button>
+
+      <div class="transcription-controls">
+        <button id="micButton" aria-label="Start or stop recording"><span aria-hidden="true">🎤</span></button>
+
+        <div id="transcriptionLangWrapper">
+          <label for="transcriptionLanguageSelector" style="font-weight: bold;">Transcription Language:</label>
+          <select id="transcriptionLanguageSelector">
+            <option value="de-DE">German</option>
+            <option value="en-US">English</option>
+            <option value="fa-IR">Persian</option>
+          </select>
+        </div>
+      </div>
+
       <div class="play-controls">
         <button id="playButton" aria-label="Play text"><span aria-hidden="true">▶</span> Text abspielen</button>
         <button id="restartButton" aria-label="Restart playback" disabled>🔁 Neustart</button>
@@ -84,15 +97,6 @@
       <div id = "uiLanguageSelectionBox">
         <label for="uiLanguageSelect" id="uiLanguageSelectionLabel">Preferred language for the UI:</label>
         <select id="uiLanguageSelector">
-          <option value="de-DE" selected>German</option>
-          <option value="en-US">English</option>
-          <option value="fa-IR">Persian</option>
-        </select>
-      </div>
-
-      <div id = "transcriptionLanguageSelectionBox">
-        <label for="transcriptionLanguageSelect" id="transcriptionLanguageSelectionLabel">Preferred Language to transcribe to:</label>
-        <select id="transcriptionLanguageSelector">
           <option value="de-DE" selected>German</option>
           <option value="en-US">English</option>
           <option value="fa-IR">Persian</option>
