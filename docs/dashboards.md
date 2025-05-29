@@ -7,5 +7,8 @@ https://console.cloud.google.com/
 Detect Languages API Dashboard (to detect language prior to TTS):
 https://detectlanguage.com/
 
+Netlify (for domain hosting and back-end functionality):
+https://www.netlify.com/
+
 Upstash Dashboard:
 https://upstash.com/
