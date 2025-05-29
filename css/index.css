@@ -106,7 +106,7 @@ main {
   gap: 120px; /* More space between buttons */
   height: 28vh;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 35px;
 }
 
 .controls button {
@@ -128,7 +128,7 @@ main {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
-  margin-top: 40px;
+  margin-top: 30px;
   width: 100%;
 }
 
