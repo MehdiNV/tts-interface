@@ -122,6 +122,24 @@ let currentSpeed = 'normal';
 // Variables to handle dynamic playback (e.g. click word to jump to it audio-wise)
 let activeWordSpans = [];
 
+// Logic to handle loading display
+function showLoading() {
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  disableInteractiveButtons(true);
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none';
+  disableInteractiveButtons(false);
+}
+
+function disableInteractiveButtons(disable = true) {
+  micButton.disabled = disable;
+  playButton.disabled = disable;
+  restartButton.disabled = disable;
+  clearButton.disabled = disable;
+  transcriptionLanguageSelector.disabled = disable;
+}
 
 // Logic to handle user preferances --------------------------------------------
 function adjustPlayButtonByPreferredLanguage(){
@@ -250,6 +268,11 @@ function interruptAudioPlayback() {
 }
 
 async function verbaliseTextViaTTS(textToVerbalise) {
+  if (!textToVerbalise || textToVerbalise.trim() === '') {
+    announce("There is no text to read aloud");
+    return;
+  }
+
   if (isCurrentlySpeaking && currentAudio) {
     if (!currentAudio.paused) {
       // 🔴 Pause audio and highlighting
@@ -271,6 +294,8 @@ async function verbaliseTextViaTTS(textToVerbalise) {
       return;
     }
   }
+
+  showLoading(); // Show loading display to prevent repeat user inputs
 
   try {
     isCurrentlySpeaking = true;
@@ -316,7 +341,9 @@ async function verbaliseTextViaTTS(textToVerbalise) {
 
     adjustPlayButtonByPreferredLanguage();
   }
-
+  finally {
+    hideLoading(); // Processing is over, hide the loading display
+  }
 }
 
 function highlightTextByWordsRightToLeft(text) {
@@ -669,6 +696,7 @@ async function toggleRecording() {
         const formData = new FormData();
         formData.append('file', blob, 'audio.webm');
         formData.append('model', 'whisper-1');
+        showLoading(); // ⏳ Show loading indicator + disable buttons
 
         try {
           function arrayBufferToBase64(buffer) {
@@ -701,6 +729,9 @@ async function toggleRecording() {
           }
         } catch (err) {
           console.error('🔴 API call failed:', error);
+        }
+        finally {
+          hideLoading(); // Disable loading overlays after transcription processing completes
         }
       };
 
