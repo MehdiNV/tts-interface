@@ -836,7 +836,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const FORCE_SHOW_CAMERA = false; // Force button to be visible for local development
   // const FORCE_SHOW_CAMERA = (window.location.hostname === 'localhost'); // Force button to be visible for local development
 
-  if ((FORCE_SHOW_CAMERA || window.mobileCheck() && navigator.mediaDevices?.getUserMedia) {
+  if ((FORCE_SHOW_CAMERA || window.mobileCheck()) && navigator.mediaDevices?.getUserMedia) {
     console.log('✅ Showing camera button...');
     cameraBtn.style.display = 'flex';
   } else {
