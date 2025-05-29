@@ -428,10 +428,13 @@ main {
 }
 
 #transcriptionLanguageSelector {
-  font-size: 1em;
+  background-color: #E1EAED;
+  border: 6px solid #00BFFF;
+  font-size: 1.4em;
+  font-weight: bold;
   padding: 8px;
-  width: 180px;
   margin-top: 5px;
+  width: 180px;
 }
 
 @media (max-width: 600px) {
