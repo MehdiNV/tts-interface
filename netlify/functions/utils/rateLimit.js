@@ -5,11 +5,11 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-const RATE_LIMIT = 5; // max requests
+const RATE_LIMIT = 10; // max requests
 const WINDOW_SECONDS = 60; // 1 minute
 
-module.exports = async function checkRateLimit(ip) {
-  const key = `rate:${ip}`;
+module.exports = async function checkRateLimit(clientIp) {
+  const key = `rate:${clientIp}`;
   const count = await redis.incr(key);
   if (count === 1) await redis.expire(key, WINDOW_SECONDS);
 

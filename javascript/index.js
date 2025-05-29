@@ -340,78 +340,68 @@ function highlightTextByWordsRightToLeft(text) {
   });
 }
 
+// Farsi TTS -------------------------------------------------------------------
 // Handles languages that read from right-to-left, in paticular Farsi / Persian
+function splitTextIntoChunks(text, maxChars = 1000) {
+  const chunks = [];
+  let currentChunk = '';
+
+  const sentences = text.match(/[^.!؟\n]+[.!؟\n]*\s*/g) || [text];
+
+  for (const sentence of sentences) {
+    if ((currentChunk + sentence).length > maxChars) {
+      chunks.push(currentChunk.trim());
+      currentChunk = sentence;
+    } else {
+      currentChunk += sentence;
+    }
+  }
+
+  if (currentChunk) chunks.push(currentChunk.trim());
+
+  return chunks;
+}
+
 async function utiliseOpenAiTTS(textToVerbalise, payload) {
   try {
     let audioBlob;
-    let timepoints;
 
     // Check if we have cached this audio already - if so, just re-play existing one
     if (isAudioAlreadyCached(textToVerbalise)) {
       console.log('📚 Re-playing cached copy...');
       audioBlob = lastCachedAudioBlob;
-      timepoints = convertTimestampsBetweenSpeeds(lastCachedTimepoints);
     }
     else { // Otherwise fetch a new one
-      const response = await fetch('/.netlify/functions/openaiFarsiTTS', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const chunks = splitTextIntoChunks(textToVerbalise, 1000);
+      const audioBlobs = [];
 
-      const result = await response.json();
-      if (!response.ok || !result.audioContent) {
-        console.error('🔴 OpenAI TTS error response:', result);
-        throw new Error(result.error || 'Invalid audio response from OpenAI TTS');
+      for (const chunk of chunks) {
+        const response = await fetch('/.netlify/functions/openaiFarsiTTS', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...payload, text: chunk })
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.audioContent) {
+          console.error('🔴 OpenAI TTS error response:', result);
+          throw new Error(result.error || 'Invalid audio response from OpenAI TTS');
+        }
+
+        const chunkBlob = new Blob(
+          [Uint8Array.from(atob(result.audioContent), c => c.charCodeAt(0))],
+          { type: 'audio/mp3' }
+        );
+
+        audioBlobs.push(chunkBlob);
       }
 
-      timepoints = adjustInitialTimepointsToPlaybackSpeed(result.timepoints, true);
-      audioBlob = new Blob([Uint8Array.from(atob(result.audioContent), c => c.charCodeAt(0))], { type: 'audio/mp3' });
+      audioBlob = new Blob(audioBlobs, { type: 'audio/mp3' });
     }
 
     const audioUrl = URL.createObjectURL(audioBlob);
     const audio = new Audio(audioUrl);
     currentAudio = audio;
-
-    highlightTextByWordsRightToLeft(textToVerbalise);
-    activeWordSpans = Array.from(document.querySelectorAll('#textDisplay .word'));
-    const words = textToVerbalise.trim().split(/\s+/).map(word => word.replace(/[“”‘’"',.?!:;]/g, '').toLowerCase());
-
-    function trackAudioProgress() {
-      if (!audio || audio.paused || audio.ended) return;
-
-      const playbackSpeedEqualiser = repeatSlowerNextTime ? speeds['normal'] : speeds['slow'];
-      const currentTime = (audio.currentTime / playbackSpeedEqualiser);
-
-      // Find the currently spoken word based on timestamp
-      const activeIndex = timepoints.findIndex(tp => {
-        const start = parseFloat(tp.start);
-        const end = parseFloat(tp.end);
-        return currentTime >= start && currentTime < end;
-      });
-
-      console.log(`🎧 time=${currentTime.toFixed(2)}s → activeIndex=${activeIndex}`);
-
-      if (activeIndex !== -1 && activeWordSpans[activeIndex]) {
-        activeWordSpans.forEach(span => span.classList.remove('spoken', 'current'));
-
-        // Mark all previous words as spoken
-        for (let j = 0; j < activeIndex; j++) {
-          activeWordSpans[j]?.classList.add('spoken');
-        }
-
-        // Highlight the current word
-        const currentSpan = activeWordSpans[activeIndex];
-        currentSpan.classList.add('current');
-        currentSpan.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline:'center'
-        });
-      }
-
-      highlightFrameId = requestAnimationFrame(trackAudioProgress);
-    }
 
     audio.onended = () => {
       isCurrentlySpeaking = false;
@@ -429,13 +419,6 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
       }
     };
 
-    audio.onplay = () => {
-      console.log("▶️ Farsi audio is starting or resuming — scheduling highlights...");
-      if (timepoints.length > 0) {
-        highlightFrameId = requestAnimationFrame(trackAudioProgress);
-      }
-    };
-
     if (repeatSlowerNextTime) {
       console.log("Farsi audio is set to play at 0.5 speed...");
       audio.playbackRate = 0.5;
@@ -448,7 +431,7 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     lastCachedText = textToVerbalise;
     lastCachedLanguageCode = payload.languageCode;
     lastCachedAudioBlob = audioBlob;
-    lastCachedTimepoints = timepoints;
+    lastCachedTimepoints = [];
 
     audio.play();
   }
@@ -460,6 +443,8 @@ async function utiliseOpenAiTTS(textToVerbalise, payload) {
     adjustPlayButtonByPreferredLanguage();
   }
 }
+// Farsi TTS -------------------------------------------------------------------
+
 
 function highlightTextByWordsLeftToRight(text) {
   textDisplay.setAttribute('dir', 'ltr');

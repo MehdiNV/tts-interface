@@ -19,10 +19,9 @@ exports.handler = async function (event) {
   }
   // Rate limiting mechanism ---------------------------------------------------
 
-
   console.log('📥 Incoming request:', event.body);
-
   const { text, languageCode } = JSON.parse(event.body || '{}');
+  
   if (!text || languageCode !== 'fa-IR') {
     console.warn('⚠️ Invalid input:', { text, languageCode });
     return {
@@ -59,23 +58,11 @@ exports.handler = async function (event) {
     await fs.writeFile(tempPath, audioBuffer);
     console.log('💾 Audio file saved at:', tempPath);
 
-    // Step 2: Transcribe speech
-    console.log('📝 Transcribing audio with word-level timestamps...');
-    const transcription = await openai.audio.transcriptions.create({
-      file: fssync.createReadStream(tempPath),
-      model: 'whisper-1',
-      response_format: 'verbose_json',
-      timestamp_granularities: ['word'],
-      language: 'fa'
-    });
-
-    console.log('✅ Transcription successful');
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        audioContent: audioBuffer.toString('base64'),
-        timepoints: transcription.words || []
+        audioContent: audioBuffer.toString('base64')
       })
     };
 
