@@ -1045,6 +1045,7 @@ transcriptionLanguageSelector.addEventListener('change', async (e) => {
   currentTranscriptionLanguage = transcriptionLanguageSelector.value;
 });
 
+// TODO - Add transcription preference in settings, as default starter
 function persistPreferences() {
   const payload = JSON.stringify({
     transcriptionLanguage: currentTranscriptionLanguage
@@ -1060,15 +1061,6 @@ function persistPreferences() {
     console.log("💾 Transcription language saved before exit");
   }
 }
-
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    persistPreferences();
-  }
-});
-
-window.addEventListener('pagehide', persistPreferences);
-
 
 saveSettingsButton.addEventListener('click', async () => {
   const uiLang = uiLanguageSelector.value;
