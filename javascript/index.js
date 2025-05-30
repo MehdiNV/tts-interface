@@ -111,6 +111,10 @@ const germanLanguageOptionLabel = document.getElementById('germanLanguageOptionL
 const englishLanguageOptionLabel = document.getElementById('englishLanguageOptionLabel');
 const persianLanguageOptionLabel = document.getElementById('persianLanguageOptionLabel');
 
+const germanLanguageModalOptionLabel = document.getElementById('germanLanguageModalOptionLabel');
+const englishLanguageModalOptionLabel = document.getElementById('englishLanguageModalOptionLabel');
+const persianLanguageModalOptionLabel = document.getElementById('persianLanguageModalOptionLabel');
+
 let highlightFrameId = null;
 
 // Variables and function to handle caching
@@ -273,6 +277,10 @@ function updateInterfaceLanguage(langCode) {
   germanLanguageOptionLabel.textContent = appropriateLabels.germanLanguageOptionLabel;
   englishLanguageOptionLabel.textContent = appropriateLabels.englishLanguageOptionLabel;
   persianLanguageOptionLabel.textContent = appropriateLabels.persianLanguageOptionLabel;
+
+  germanLanguageModalOptionLabel.textContent = appropriateLabels.germanLanguageOptionLabel;
+  englishLanguageModalOptionLabel.textContent = appropriateLabels.englishLanguageOptionLabel;
+  persianLanguageModalOptionLabel.textContent = appropriateLabels.persianLanguageOptionLabel;
 }
 
 function calcSaveButtonsText(saveState){
@@ -280,7 +288,7 @@ function calcSaveButtonsText(saveState){
     if (currentWebsiteUserInterfaceLanguage == 'de-DE') {
       return 'Sparen...';
     }
-    else if () {
+    else if (currentWebsiteUserInterfaceLanguage == 'en-US') {
       return 'Saving...';
     }
     else {
@@ -291,7 +299,7 @@ function calcSaveButtonsText(saveState){
     if (currentWebsiteUserInterfaceLanguage == 'de-DE') {
       return 'Gespeichert ✔';
     }
-    else if () {
+    else if (currentWebsiteUserInterfaceLanguage == 'en-US') {
       return 'Saved ✔';
     }
     else {
@@ -302,7 +310,7 @@ function calcSaveButtonsText(saveState){
     if (currentWebsiteUserInterfaceLanguage == 'de-DE') {
       return 'Speichern';
     }
-    else if () {
+    else if (currentWebsiteUserInterfaceLanguage == 'en-US') {
       return 'Save';
     }
     else {
