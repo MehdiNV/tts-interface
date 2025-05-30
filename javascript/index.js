@@ -5,8 +5,15 @@ const uiTranslations = {
     restart: 'Neustart',
     clear: 'Klar',
     mic: '🎤',
+    transcriptionSelectorLabel: 'Transkriptionssprache',
     settings: '⚙️',
+    settingsHeader: 'Einstellungen',
+    settingsSelectorLabel: 'Bevorzugte Sprache für die Benutzeroberfläche',
+    saveLabel: 'Speichern',
+    closeLabel: 'Schließen',
     info: 'ℹ️',
+    informationHeader: 'Information',
+    informationText: "Barrierefreiheitstool mit Text-to-Speech- (TTS) und Speech-to-Text-Funktionen (STT). Ich habe dieses Tool für meinen Großvater Rasul entwickelt, um ihm das Leben zu erleichtern. Wenn es auch anderen hilft, dann: Je mehr, desto besser!",
     shortcutsHeading: 'Tastenkombinationen',
     shortcuts: [
       '<strong>R</strong>: Aufnahme starten/stoppen',
@@ -23,8 +30,15 @@ const uiTranslations = {
     restart: 'Restart',
     clear: 'Clear',
     mic: '🎤',
+    transcriptionSelectorLabel: 'Transcription language',
     settings: '⚙️',
+    settingsHeader: 'Settings',
+    settingsSelectorLabel: 'Preferred language for the UI',
+    saveLabel: 'Save',
+    closeLabel: 'Close',
     info: 'ℹ️',
+    informationHeader: 'Information',
+    informationText: "Accessibility tool that provides text-to-speech (TTS) and speech-to-text (STT) capabilities. I created this tool for my grandfather, Rasul, to make his life easier; if this helps anyone else as well, then the more the merrier!",
     shortcutsHeading: 'Keyboard Shortcuts',
     shortcuts: [
       '<strong>R</strong>: Start/stop recording',
@@ -41,8 +55,15 @@ const uiTranslations = {
     restart: 'شروع دوباره',
     clear: 'پاک کردن',
     mic: '🎤',
+    transcriptionSelectorLabel: 'زبان رونویسی',
     settings: '⚙️',
+    settingsHeader: 'تنظیمات',
+    settingsSelectorLabel: 'زبان برگزیده برای رابط کاربری',
+    saveLabel: 'ذخیره کنید',
+    closeLabel: 'بستن',
     info: 'ℹ️',
+    informationHeader: 'اطلاعات',
+    informationText: "ابزار دسترس‌پذیری که قابلیت‌های تبدیل متن به گفتار (TTS) و گفتار به نوشتار (STT) را فراهم می‌کند. من این ابزار را برای پدربزرگم، رسول، ایجاد کردم تا زندگی او را آسان‌تر کنم. اگر این به شخص دیگری نیز کمک کند، هر چه بیشتر بهتر است!",
     shortcutsHeading: 'میانبرهای صفحه‌کلید',
     shortcuts: [
       '<strong>R</strong>: شروع/توقف ضبط',
@@ -60,17 +81,22 @@ const textDisplay = document.getElementById('textDisplay');
 const playButton = document.getElementById('playButton');
 const restartButton = document.getElementById('restartButton');
 const micButton = document.getElementById('micButton');
+const transcriptionLanguageSelectorLabel = document.getElementById('transcriptionLanguageSelectorLabel');
+const transcriptionLanguageSelector = document.getElementById('transcriptionLanguageSelector');
 const clearButton = document.getElementById('clearButton');
 
 const settingsBtn = document.getElementById('settingsButton');
 const settingsModal = document.getElementById('settingsModal');
-const closeSettings = document.getElementById('closeSettings');
+const settingsModalHeader = document.getElementById('settingsModalHeader');
+const closeSettingsButton = document.getElementById('closeSettings');
 const uiLanguageSelector = document.getElementById('uiLanguageSelector');
-const transcriptionLanguageSelector = document.getElementById('transcriptionLanguageSelector');
+const uiLanguageSelectionLabel = document.getElementById('uiLanguageSelectionLabel');
 
 const infoBtn = document.getElementById('infoButton');
 const infoModal = document.getElementById('infoModal');
-const closeInfo = document.getElementById('closeInfo');
+const infoModalHeader = document.getElementById('infoModalHeader');
+const infoModalText = document.getElementById('infoModalText');
+const closeInfoButton = document.getElementById('closeInfo');
 
 let highlightFrameId = null;
 
@@ -93,7 +119,7 @@ function isAudioAlreadyCached(textToVerbalise) {
 let currentWebsiteUserInterfaceLanguage = 'de-DE';
 let currentTranscriptionLanguage = 'de-DE';
 
-const saveSettings = document.getElementById('saveSettings');
+const saveSettingsButton = document.getElementById('saveSettings');
 let initialUILang = 'de-DE';
 let initialTxLang = 'de-DE';
 
@@ -209,6 +235,7 @@ function updateInterfaceLanguage(langCode) {
   playButton.innerHTML = `<span aria-hidden="true">▶</span> ${appropriateLabels.play}`;
   restartButton.innerHTML = `<span aria-hidden="true">🔁</span> ${appropriateLabels.restart}`;
   clearButton.innerHTML = `<span aria-hidden="true">✕</span> ${appropriateLabels.clear}`;
+  transcriptionLanguageSelectorLabel.textContent = appropriateLabels.transcriptionSelectorLabel;
 
   // Update the keyboard shortcuts according to language of the user
   const shortcutHeading = document.querySelector('.keyboardShortcuts h2');
@@ -220,6 +247,15 @@ function updateInterfaceLanguage(langCode) {
   if (shortcutList && appropriateLabels.shortcuts) {
     shortcutList.innerHTML = appropriateLabels.shortcuts.map(item => `<li>${item}</li>`).join('');
   }
+
+  infoModalHeader.textContent = appropriateLabels.informationHeader;
+  infoModalText.textContent = appropriateLabels.informationText;
+  closeInfoButton.textContent = appropriateLabels.closeLabel;
+
+  settingsModalHeader.textContent = appropriateLabels.settingsHeader;
+  uiLanguageSelectionLabel.textContent = appropriateLabels.settingsSelectorLabel;
+  saveSettingsButton.textContent = appropriateLabels.saveLabel;
+  closeSettingsButton.textContent = appropriateLabels.closeLabel;
 }
 // -----------------------------------------------------------------------------
 
@@ -925,7 +961,7 @@ infoBtn.addEventListener('click', () => {
   infoModal.classList.add('show');
 });
 
-closeInfo.addEventListener('click', () => {
+closeInfoButton.addEventListener('click', () => {
   infoModal.classList.add('fade-out');
   setTimeout(() => {
     infoModal.style.display = 'none';
@@ -941,7 +977,7 @@ infoModal.addEventListener('click', (e) => {
 
 uiLanguageSelector.addEventListener('change', async (e) => {
   const selected = uiLanguageSelector.value;
-  saveSettings.disabled = (selected === initialUILang);
+  saveSettingsButton.disabled = (selected === initialUILang);
 });
 
 transcriptionLanguageSelector.addEventListener('change', async (e) => {
@@ -973,13 +1009,13 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('pagehide', persistPreferences);
 
 
-saveSettings.addEventListener('click', async () => {
+saveSettingsButton.addEventListener('click', async () => {
   const uiLang = uiLanguageSelector.value;
   const transcriptionLang = transcriptionLanguageSelector.value;
 
   if (uiLang !== initialUILang || transcriptionLang !== initialTxLang) {
-    saveSettings.textContent = 'Saving...';
-    saveSettings.disabled = true;
+    saveSettingsButton.textContent = 'Saving...';
+    saveSettingsButton.disabled = true;
 
     try {
       await fetch('/.netlify/functions/userLanguage', {
@@ -999,11 +1035,11 @@ saveSettings.addEventListener('click', async () => {
       initialTxLang = transcriptionLang;
 
       // Close the modal after a brief confirmation
-      saveSettings.textContent = 'Saved ✔';
+      saveSettingsButton.textContent = 'Saved ✔';
 
       // Step 1: Let the user read the confirmation
       setTimeout(() => {
-        saveSettings.textContent = 'Save';
+        saveSettingsButton.textContent = 'Save';
 
         // Step 2: Start fade-out animation
         settingsModal.classList.add('fade-out');
@@ -1012,7 +1048,7 @@ saveSettings.addEventListener('click', async () => {
         setTimeout(() => {
           settingsModal.style.display = 'none';
           settingsModal.classList.remove('fade-out');
-          saveSettings.disabled = true;
+          saveSettingsButton.disabled = true;
         }, 600); // Match CSS transition duration
 
       }, 2000); // Show "Saved ✔" for 1 second
@@ -1020,10 +1056,10 @@ saveSettings.addEventListener('click', async () => {
 
     } catch (err) {
       console.error('🔴 Failed to save preferences:', err);
-      saveSettings.textContent = 'Error ❌';
+      saveSettingsButton.textContent = 'Error ❌';
       setTimeout(() => {
-        saveSettings.textContent = 'Save';
-        saveSettings.disabled = false;
+        saveSettingsButton.textContent = 'Save';
+        saveSettingsButton.disabled = false;
       }, 1500);
     }
   } else {
@@ -1050,7 +1086,7 @@ settingsModal.addEventListener('click', (e) => {
   }
 });
 
-closeSettings.addEventListener('click', () => {
+closeSettingsButton.addEventListener('click', () => {
   settingsModal.classList.add('fade-out');
   setTimeout(() => {
     settingsModal.style.display = 'none';
