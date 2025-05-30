@@ -22,7 +22,10 @@ const uiTranslations = {
       '<strong>Escape</strong>: Text löschen',
       '<strong>Leertaste</strong>: Text abspielen/pause',
       '<strong>Shift + ?</strong>: Tastenkombinationen vorlesen'
-    ]
+    ],
+    germanLanguageOptionLabel: "Deutsch",
+    englishLanguageOptionLabel: "Englisch",
+    persianLanguageOptionLabel: "Persisch",
   },
   'en-US': {
     play: 'Play Text',
@@ -47,7 +50,10 @@ const uiTranslations = {
       '<strong>Escape</strong>: Clear text',
       '<strong>Spacebar</strong>: Play/pause text',
       '<strong>Shift + ?</strong>: Read keyboard shortcuts aloud'
-    ]
+    ],
+    germanLanguageOptionLabel: "German",
+    englishLanguageOptionLabel: "English",
+    persianLanguageOptionLabel: "Persian",
   },
   'fa-IR': {
     play: 'پخش متن',
@@ -72,7 +78,10 @@ const uiTranslations = {
       '<strong>Escape</strong>: پاک‌سازی متن',
       '<strong>Spacebar</strong>: پخش/توقف متن',
       '<strong>Shift + ?</strong>: خواندن میانبرهای صفحه‌کلید'
-    ]
+    ],
+    germanLanguageOptionLabel: "آلمانی",
+    englishLanguageOptionLabel: "انگلیسی",
+    persianLanguageOptionLabel: "فارسی",
   }
 };
 
@@ -97,6 +106,10 @@ const infoModal = document.getElementById('infoModal');
 const infoModalHeader = document.getElementById('infoModalHeader');
 const infoModalText = document.getElementById('infoModalText');
 const closeInfoButton = document.getElementById('closeInfo');
+
+const germanLanguageOptionLabel = document.getElementById('germanLanguageOptionLabel');
+const englishLanguageOptionLabel = document.getElementById('englishLanguageOptionLabel');
+const persianLanguageOptionLabel = document.getElementById('persianLanguageOptionLabel');
 
 let highlightFrameId = null;
 
@@ -256,6 +269,46 @@ function updateInterfaceLanguage(langCode) {
   uiLanguageSelectionLabel.textContent = appropriateLabels.settingsSelectorLabel;
   saveSettingsButton.textContent = appropriateLabels.saveLabel;
   closeSettingsButton.textContent = appropriateLabels.closeLabel;
+
+  germanLanguageOptionLabel.textContent = appropriateLabels.germanLanguageOptionLabel;
+  englishLanguageOptionLabel.textContent = appropriateLabels.englishLanguageOptionLabel;
+  persianLanguageOptionLabel.textContent = appropriateLabels.persianLanguageOptionLabel;
+}
+
+function calcSaveButtonsText(saveState){
+  if (saveState == 'Saving') {
+    if (currentWebsiteUserInterfaceLanguage == 'de-DE') {
+      return 'Sparen...';
+    }
+    else if () {
+      return 'Saving...';
+    }
+    else {
+      return 'صرفه جویی...';
+    }
+  }
+  else if (saveState == 'Saved') {
+    if (currentWebsiteUserInterfaceLanguage == 'de-DE') {
+      return 'Gespeichert ✔';
+    }
+    else if () {
+      return 'Saved ✔';
+    }
+    else {
+      return '✔ ذخیره شد';
+    }
+  }
+  else if (saveState == 'Save') {
+    if (currentWebsiteUserInterfaceLanguage == 'de-DE') {
+      return 'Speichern';
+    }
+    else if () {
+      return 'Save';
+    }
+    else {
+      return 'ذخیره کنید';
+    }
+  }
 }
 // -----------------------------------------------------------------------------
 
@@ -1014,7 +1067,7 @@ saveSettingsButton.addEventListener('click', async () => {
   const transcriptionLang = transcriptionLanguageSelector.value;
 
   if (uiLang !== initialUILang || transcriptionLang !== initialTxLang) {
-    saveSettingsButton.textContent = 'Saving...';
+    saveSettingsButton.textContent = calcSaveButtonsText('Saving');
     saveSettingsButton.disabled = true;
 
     try {
@@ -1035,11 +1088,11 @@ saveSettingsButton.addEventListener('click', async () => {
       initialTxLang = transcriptionLang;
 
       // Close the modal after a brief confirmation
-      saveSettingsButton.textContent = 'Saved ✔';
+      saveSettingsButton.textContent = calcSaveButtonsText('Saved');
 
       // Step 1: Let the user read the confirmation
       setTimeout(() => {
-        saveSettingsButton.textContent = 'Save';
+        saveSettingsButton.textContent = calcSaveButtonsText('Save');
 
         // Step 2: Start fade-out animation
         settingsModal.classList.add('fade-out');
@@ -1051,14 +1104,14 @@ saveSettingsButton.addEventListener('click', async () => {
           saveSettingsButton.disabled = true;
         }, 600); // Match CSS transition duration
 
-      }, 2000); // Show "Saved ✔" for 1 second
+      }, 2000); // Show "Saved ✔" for 2 second
 
 
     } catch (err) {
       console.error('🔴 Failed to save preferences:', err);
       saveSettingsButton.textContent = 'Error ❌';
       setTimeout(() => {
-        saveSettingsButton.textContent = 'Save';
+        saveSettingsButton.textContent = calcSaveButtonsText('Save');
         saveSettingsButton.disabled = false;
       }, 1500);
     }
