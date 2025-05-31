@@ -27,7 +27,7 @@ exports.handler = async function (event) {
     if (result.result) {
       try {
         languagePreferences = JSON.parse(result.result);
-        console.log("Set language preferences to match what's already stored")
+        console.log("GET: Set language preferences to match what's already stored")
       } catch (err) {
         console.warn(`⚠️ Invalid JSON in existing prefs, starting fresh:`, err);
       }
@@ -65,7 +65,7 @@ exports.handler = async function (event) {
       if (result.result) {
         try {
           languagePreferences = JSON.parse(result.result);
-          console.log("Set language preferences to match what's already stored")
+          console.log("POST: Set language preferences to match what's already stored")
         } catch (err) {
           console.warn(`⚠️ Invalid JSON in existing prefs, starting fresh:`, err);
         }

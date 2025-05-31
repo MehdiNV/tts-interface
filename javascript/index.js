@@ -790,13 +790,19 @@ async function toggleRecording() {
       audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioContext = new AudioContext();
       const source = audioContext.createMediaStreamSource(audioStream);
+
       gainNode = audioContext.createGain();
       gainNode.gain.value = 2.0;
       destination = audioContext.createMediaStreamDestination();
       source.connect(gainNode);
       gainNode.connect(destination);
 
-      mediaRecorder = new MediaRecorder(destination.stream);
+      const audioBitRate = 96000; // 96kbps
+      mediaRecorder = new MediaRecorder(destination.stream, {
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: audioBitRate
+      });
+
       audioChunks = [];
       mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
       mediaRecorder.onstop = async () => {
@@ -807,6 +813,23 @@ async function toggleRecording() {
         formData.append('file', blob, 'audio.webm');
         formData.append('model', 'whisper-1');
         showLoading(); // ⏳ Show loading indicator + disable buttons
+
+        // Calculate Audio metadata for logging
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const arrayBuffer = await blob.arrayBuffer();
+
+        audioCtx.decodeAudioData(arrayBuffer, decoded => {
+          const duration = decoded.duration;
+          const sizeBytes = blob.size;
+          const bitrateKbps = (sizeBytes * 8) / duration / 1000;
+
+          console.log(`🎧 Recording Duration: ${duration.toFixed(2)}s`);
+          console.log(`📦 File Size: ${(sizeBytes / 1024).toFixed(1)} KB`);
+          console.log(`📊 Effective Bitrate: ${bitrateKbps.toFixed(1)} kbps`);
+        }, err => {
+          console.error("🔴 Failed to decode audio:", err);
+        });
+        // -----------------------------------
 
         try {
           function arrayBufferToBase64(buffer) {
