@@ -896,7 +896,13 @@ function clearText() {
 
 // Event listeners for the UI --------------------------------------------------
 playButton.addEventListener('click', () => {
-  const textToVerbalise = textDisplay.innerText.trim();
+  const selection = window.getSelection();
+  const selectedText = selection && selection.rangeCount > 0
+    ? selection.toString().trim()
+    : '';
+
+  const textToVerbalise = selectedText || textDisplay.innerText.trim();
+
   verbaliseTextViaTTS(textToVerbalise);
 });
 
@@ -912,14 +918,25 @@ document.addEventListener('keydown', (e) => {
   const isTyping = document.activeElement === textDisplay;
   if (!isTyping && e.key === ' ') {
     e.preventDefault();
-    const textToVerbalise = textDisplay.innerText.trim();
+
+    const selection = window.getSelection();
+    const selectedText = selection && selection.rangeCount > 0
+      ? selection.toString().trim()
+      : '';
+
+    const textToVerbalise = selectedText || textDisplay.innerText.trim();
     verbaliseTextViaTTS(textToVerbalise);
   }
   if (!isTyping && e.key.toLowerCase() === 'r') {
     toggleRecording();
   }
   if (!isTyping && e.key.toLowerCase() === 'p') {
-    const textToVerbalise = textDisplay.innerText.trim();
+    const selection = window.getSelection();
+    const selectedText = selection && selection.rangeCount > 0
+      ? selection.toString().trim()
+      : '';
+
+    const textToVerbalise = selectedText || textDisplay.innerText.trim();
     verbaliseTextViaTTS(textToVerbalise);
   }
   if (!isTyping && e.key.toLowerCase() === 'c') {
