@@ -85,6 +85,12 @@ const uiTranslations = {
   }
 };
 
+function generateUUIDv4() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
+
 // Variables to fetch local elements
 const textDisplay = document.getElementById('textDisplay');
 const playButton = document.getElementById('playButton');
@@ -843,25 +849,42 @@ async function toggleRecording() {
 
           const arrayBuffer = await blob.arrayBuffer();
           const base64Audio = arrayBufferToBase64(arrayBuffer);
+          const transcriptionJobId = generateUUIDv4();
 
-          const response = await fetch('/.netlify/functions/transcribeAudio', {
+          const response = await fetch('/.netlify/functions/transcribeAudio-background', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              transcriptionJobId: transcriptionJobId,
               audioBase64: base64Audio,
               languageCode: currentTranscriptionLanguage
             })
           });
 
-          const data = await response.json();
-          if (data.text) {
-            textDisplay.innerText += (textDisplay.innerText.trim() ? ' ' : '') + data.text;
-            console.log("📗 Transcription was successful")
+          console.log("⏳ Job queued. Polling for result...");
+          console.log("Full response for the queued job: ", response);
+
+          let attempts = 0;
+          let resultData = null;
+
+          while (attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 8000)); // Wait 8 seconds
+            const pollRes = await fetch(`/.netlify/functions/getTranscription?id=${transcriptionJobId}`);
+            if (pollRes.status === 200) {
+              resultData = await pollRes.json();
+              break;
+            }
+            attempts++;
+          }
+
+          if (resultData?.text) {
+            textDisplay.innerText += (textDisplay.innerText.trim() ? ' ' : '') + resultData.text;
+            console.log("📗 Transcription retrieved successfully");
           } else {
-            console.error("🔴 There was a failure in accessing the transcription")
+            console.warn("🔴 Failed to retrieve transcription in time");
           }
         } catch (err) {
-          console.error('🔴 API call failed:', error);
+          console.error('🔴 API call failed:', err);
         }
         finally {
           hideLoading(); // Disable loading overlays after transcription processing completes
