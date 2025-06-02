@@ -232,14 +232,8 @@ main {
 }
 
 #transcriptionLanguageSelectorLabel {
-  font-size: 1.1em;
+  font-size: 1.4em;
   font-weight: bold;
-}
-
-#transcriptionLanguageSelector {
-  font-size: 1em;
-  padding: 8px;
-  width: 80%;
 }
 
 .modal-content {
@@ -442,7 +436,7 @@ main {
 #transcriptionLanguageSelector {
   background-color: #E1EAED;
   border: 6px solid #00BFFF;
-  font-size: 1.4em;
+  font-size: 3em;
   font-weight: bold;
   margin-top: 5px;
   padding: 8px;
