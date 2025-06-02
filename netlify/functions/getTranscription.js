@@ -19,8 +19,10 @@ exports.handler = async function(event) {
   }
 
   console.log(`Transcription (Job ID ${jobId}) processing is completed: `, result);
-  console.log("Returning result now...");
+  console.log(`Deleting Job ID ${jobId} from Redis due to it now being redundant`);
+  await redis.del(`transcription:${jobId}`);
 
+  console.log("Returning result now...");
   return {
     statusCode: 200,
     body: JSON.stringify(result),
