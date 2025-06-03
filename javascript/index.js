@@ -868,7 +868,7 @@ async function toggleRecording() {
           let resultData = null;
 
           while (attempts < 10) {
-            await new Promise(resolve => setTimeout(resolve, 8000)); // Wait 8 seconds
+            await new Promise(resolve => setTimeout(resolve, 20000)); // Wait 20 seconds per interval
             const pollRes = await fetch(`/.netlify/functions/getTranscription?id=${transcriptionJobId}`);
             if (pollRes.status === 200) {
               resultData = await pollRes.json();
