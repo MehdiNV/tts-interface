@@ -22,4 +22,8 @@ APIs:
 
 Code of Conduct: Please see the [Code of Conduct](CodeOfConduct.md)
 
+## For local testing:
+Run `netlify dev`
+
+## Questions?
 For any questions, please contact me at _MehdiNV@hotmail.com_.
